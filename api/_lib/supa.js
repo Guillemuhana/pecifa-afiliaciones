@@ -8,7 +8,11 @@ export function admin() {
   if (_c) return _c;
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Faltan SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !key) {
+    const error = new Error('Faltan SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY en el servidor');
+    error.code = 'SUPABASE_CONFIG';
+    throw error;
+  }
   _c = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
   return _c;
 }
@@ -19,7 +23,10 @@ export async function cargarArchivos(row, campos = null) {
   for (const a of row.archivos || []) {
     if (campos && !campos.includes(a.campo)) continue;
     const { data, error } = await admin().storage.from(BUCKET).download(a.path);
-    if (error || !data) continue;
+    if (error || !data) {
+      console.error('Supabase: descargar documento para PDF', { campo: a.campo, code: error?.code, message: error?.message });
+      throw error || new Error('No se pudo descargar un documento de la solicitud.');
+    }
     const bytes = new Uint8Array(await data.arrayBuffer());
     (out[a.campo] ||= []).push({ ...a, bytes });
   }

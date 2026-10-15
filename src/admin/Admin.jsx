@@ -175,7 +175,7 @@ function Listado() {
     setCargando(true);
     setError('');
     const { data, count, error: e } = await consulta('id,nro_tramite,estado,apellido,nombres,dni,fuerza,localidad,created_at,nro_afiliado,archivos', { count: 'exact' })
-      .order('id', { ascending: false })
+      .order('created_at', { ascending: false }).order('id', { ascending: false })
       .range(0, pag * POR_PAGINA - 1);
     if (e) setError(e.message);
     setRows(data || []);
@@ -202,7 +202,7 @@ function Listado() {
   }, [rows.length]);
 
   const exportar = async () => {
-    const { data, error: e } = await consulta('*').order('id', { ascending: true }).range(0, 9999);
+    const { data, error: e } = await consulta('*').order('created_at', { ascending: true }).order('id', { ascending: true }).range(0, 9999);
     if (e) return alert(e.message);
     const campos = Object.entries(CAMPOS).filter(([, f]) => !esArchivo(f) && f.type !== 'firma' && f.type !== 'declaracion');
     const head = ['Trámite', 'Fecha de carga', 'Estado', 'N.º de afiliado', ...campos.flatMap(([, f]) => (f.type === 'familiares' ? ['Familiares', 'Cantidad de familiares'] : [f.label])), 'Adjuntos', 'Firmó', 'Notas internas'];
@@ -335,7 +335,7 @@ function Detalle({ usuario }) {
   const [form, setForm] = useState({ estado: '', nro_afiliado: '', notas: '', nota: '', notificar: false });
 
   const cargar = useCallback(async () => {
-    const { data, error } = await supabase.from('afiliaciones').select('*').eq('id', Number(id)).maybeSingle();
+    const { data, error } = await supabase.from('afiliaciones').select('*').eq('id', id).maybeSingle();
     if (error || !data) {
       setRow(false);
       return;

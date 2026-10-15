@@ -78,7 +78,8 @@ export default function Formulario() {
       return;
     }
     if (!supabaseOk) {
-      setGlobal('La app todavía no está conectada a la base de datos (faltan las variables VITE_SUPABASE_*).');
+      console.error('Configuración Supabase incompleta: faltan VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY.');
+      setGlobal('El servicio de afiliaciones todavía no está configurado. Comunicate con PE.CI.F.A. para completar tu solicitud.');
       return;
     }
 
@@ -98,7 +99,10 @@ export default function Formulario() {
         body: JSON.stringify({ archivos: lista.map((a) => ({ campo: a.campo, mime: a.file.type, bytes: a.file.size })) }),
       });
       const j1 = await r1.json().catch(() => ({}));
-      if (!r1.ok) throw new Error(j1.error || 'No pudimos preparar la subida.');
+      if (!r1.ok) {
+        console.error('API/Supabase: preparar adjuntos', { status: r1.status, error: j1.error });
+        throw new Error(j1.error || 'No pudimos preparar la subida.');
+      }
 
       // 2) Subir cada archivo directo al storage.
       const total = lista.reduce((a, b) => a + b.file.size, 0) || 1;
@@ -109,7 +113,10 @@ export default function Formulario() {
         const u = j1.uploads[i];
         setProgreso({ pct: 5 + Math.round((subido / total) * 75), txt: `Subiendo documentación (${i + 1} de ${lista.length})…` });
         const { error } = await supabase.storage.from(BUCKET).uploadToSignedUrl(u.path, u.token, file, { contentType: file.type });
-        if (error) throw new Error(`No se pudo subir «${file.name}». Revisá tu conexión y volvé a intentar.`);
+        if (error) {
+          console.error('Supabase Storage: subir adjunto', { campo, code: error.code, message: error.message });
+          throw new Error(`No se pudo subir «${file.name}». Revisá tu conexión y volvé a intentar.`);
+        }
         subido += file.size;
         archivos.push({ campo, path: u.path, nombre: file.name });
       }
@@ -123,6 +130,7 @@ export default function Formulario() {
       });
       const j2 = await r2.json().catch(() => ({}));
       if (!r2.ok) {
+        console.error('API/Supabase: registrar afiliación', { status: r2.status, error: j2.error });
         if (j2.errores) {
           setErr(j2.errores);
           irAlError(Object.keys(j2.errores));
@@ -133,6 +141,7 @@ export default function Formulario() {
       setOk(j2);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
+      console.error('Formulario: no se completó el envío', e);
       setGlobal(e.message || 'Error inesperado. Probá de nuevo.');
     } finally {
       setEnviando(false);

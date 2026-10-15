@@ -5,21 +5,24 @@ import { json, pdf, soloMetodo } from './_lib/http.js';
 import { generarPdf, nombrePdf } from './_lib/pdf.js';
 import { avisoInterno, cambioEstado } from './_lib/avisos.js';
 import { correoConfigurado, destinosInternos } from './_lib/mail.js';
+import { uuidValido } from '../lib/ids.js';
 
 export const config = { maxDuration: 60 };
 
 export default async function handler(req, res) {
   if (!soloMetodo(req, res, 'POST')) return;
+  try {
   const staff = await staffDesdeReq(req);
   if (!staff) return json(res, 401, { error: 'Sesión inválida o sin permiso.' });
   const { accion, id, nota } = req.body || {};
 
   if (accion === 'estado-correo') return json(res, 200, { configurado: correoConfigurado(), destinos: destinosInternos() });
 
-  const { data: row } = await admin().from('afiliaciones').select('*').eq('id', Number(id)).maybeSingle();
+  if (!uuidValido(id)) return json(res, 400, { error: 'Identificador de solicitud inválido.' });
+  const { data: row, error } = await admin().from('afiliaciones').select('*').eq('id', id).maybeSingle();
+  if (error) throw error;
   if (!row) return json(res, 404, { error: 'Solicitud inexistente.' });
 
-  try {
     if (accion === 'expediente' || accion === 'ficha') {
       const exp = accion === 'expediente';
       const files = await cargarArchivos(row, exp ? null : ['firma', 'adj_selfie']);
@@ -36,7 +39,7 @@ export default async function handler(req, res) {
     }
     json(res, 400, { error: 'Acción desconocida.' });
   } catch (e) {
-    console.error('admin', accion, e);
+    console.error('Supabase/admin', e);
     json(res, 500, { error: String(e.message || e).slice(0, 300) });
   }
 }

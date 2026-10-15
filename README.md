@@ -31,6 +31,45 @@ App para la **Ficha de Afiliación** de PE.CI.F.A. El afiliado completa la ficha
 
 ## Puesta en marcha
 
+### Proyecto y esquema de esta versión
+
+El proyecto previsto es `hnkrtdrogkxdndquofpz` (`https://hnkrtdrogkxdndquofpz.supabase.co`).
+Las URL `VITE_SUPABASE_URL` y `SUPABASE_URL` deben coincidir; las claves pública y
+de servidor también deben pertenecer a ese proyecto. La clave de servidor nunca
+lleva prefijo `VITE_` ni se sube al repositorio.
+
+Esta versión usa `afiliaciones.id` **UUID**, más `numero` (identity) para generar
+automáticamente `nro_tramite` (`AF-año-correlativo`). Ejecutar el archivo completo
+`supabase/schema.sql` en SQL Editor. Puede repetirse; no convierte una tabla
+anterior con ID numérico ni borra registros. Si detecta esa tabla, se detiene.
+
+Se usan las tablas `afiliaciones` y `staff`, y el bucket privado `afiliaciones`.
+Los datos laborales y `familiares` se guardan dentro de `datos` (JSONB); los
+documentos se referencian en `archivos` (JSONB), con `campo/path/nombre/mime/bytes`.
+Los campos exactos de la ficha están en `lib/schema.js`.
+
+RLS permite a `anon` insertar datos de solicitud y subir a `borradores/`, sin
+leer/editar/borrar. La lectura y edición del panel requieren una cuenta Auth
+incluida en `staff`; `service_role` queda exclusivamente en las API de Vercel.
+**Insertar directamente con anon no ejecuta las validaciones ni envía correos**:
+el formulario usa `/api/subir` y `/api/enviar` para completar todo el proceso.
+
+Configurar también las variables de `.env.example` en Vercel **Production** y
+hacer redeploy; las variables `VITE_` se incorporan durante la compilación.
+`PUBLIC_URL=https://pecifa-afiliaciones.vercel.app` fija el dominio de los enlaces
+de descarga en los correos. Para desarrollo con API usar `npm run dev:full`.
+
+El PDF se genera con `pdf-lib` en `api/_lib/pdf.js`. `api/_lib/avisos.js` envía
+el expediente interno a `MAIL_TO` y la constancia al afiliado mediante SMTP
+(Gmail requiere contraseña de aplicación) o Resend (API key y remitente de
+dominio verificado). No se usa una Edge Function de Supabase.
+
+Prueba: ejecutar el SQL, crear el usuario de Auth del staff, configurar las
+variables y enviar una ficha con documentación de prueba y un correo propio.
+Comprobar UUID/número de trámite, firma/archivos privados, ambos correos y PDF.
+El número de trámite no es una aprobación de afiliación. Si falla el correo,
+la solicitud queda guardada y no hay que enviarla de nuevo.
+
 ### 1. Supabase
 1. Creá el proyecto (región **São Paulo**).
 2. **SQL Editor:** pegá y ejecutá todo `supabase/schema.sql`. Crea las tablas, RLS y el bucket, y habilita `guillemuhana@gmail.com` en el panel.

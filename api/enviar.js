@@ -21,9 +21,10 @@ function decodificarFirma(dataUrl) {
 
 export default async function handler(req, res) {
   if (!soloMetodo(req, res, 'POST')) return;
-  const sb = admin();
   const body = req.body || {};
+  let registrada = null;
   try {
+    const sb = admin();
     // Anti-bots: honeypot + borrador firmado con tiempo mínimo de carga.
     if (body.web) return json(res, 400, { error: 'No pudimos procesar el envío.' });
     const { draft, ts, sig } = body.borrador || {};
@@ -32,7 +33,8 @@ export default async function handler(req, res) {
 
     const dir = ip(req);
     const desde = new Date(Date.now() - RATE_MIN * 60000).toISOString();
-    const { count } = await sb.from('afiliaciones').select('id', { count: 'exact', head: true }).eq('ip', dir).gte('created_at', desde);
+    const { count, error: rateError } = await sb.from('afiliaciones').select('id', { count: 'exact', head: true }).eq('ip', dir).gte('created_at', desde);
+    if (rateError) throw rateError;
     if ((count || 0) >= RATE_MAX) return json(res, 429, { error: 'Recibimos demasiados envíos desde tu conexión. Probá en unos minutos.' });
 
     const { datos, errores } = validarTodo(body.datos || {});
@@ -45,6 +47,7 @@ export default async function handler(req, res) {
       if (!f || !esArchivo(f) || !condOk(f, datos) || !a.path.includes(`/${a.campo}-`)) continue;
       const { data, error } = await sb.storage.from(BUCKET).download(a.path);
       if (error || !data) {
+        console.error('Supabase: validar adjunto', { campo: a.campo, code: error?.code, message: error?.message });
         errores[a.campo] = 'Un archivo no se terminó de subir. Volvé a adjuntarlo.';
         continue;
       }
@@ -68,7 +71,8 @@ export default async function handler(req, res) {
     if (Object.keys(errores).length) return json(res, 422, { error: 'Revisá los datos marcados.', errores });
 
     // Duplicados.
-    const { data: dup } = await sb.from('afiliaciones').select('nro_tramite').eq('dni', datos.nro_documento).neq('estado', 'rechazada').limit(1);
+    const { data: dup, error: duplicateError } = await sb.from('afiliaciones').select('nro_tramite').eq('dni', datos.nro_documento).neq('estado', 'rechazada').limit(1);
+    if (duplicateError) throw duplicateError;
     if (dup?.length) {
       return json(res, 409, { error: `Ya existe una solicitud de afiliación para este documento (trámite ${dup[0].nro_tramite}). Si necesitás corregir datos, comunicate con tu seccional.`, errores: { nro_documento: 'Ya registrado.' } });
     }
@@ -77,6 +81,13 @@ export default async function handler(req, res) {
     datos.firma_fecha = ahora;
     datos.firma_ip = dir;
     const token = crypto.randomBytes(24).toString('base64url');
+
+    // Guardar la firma ANTES de crear el registro: no confirmar una ficha sin firma.
+    const firmaPath = `borradores/${draft}/firma-${crypto.randomBytes(6).toString('hex')}.png`;
+    const { error: firmaError } = await sb.storage.from(BUCKET).upload(firmaPath, firma, { contentType: 'image/png' });
+    if (firmaError) throw firmaError;
+    files.firma = [{ campo: 'firma', path: firmaPath, mime: 'image/png', bytes: new Uint8Array(firma), nombre: 'firma.png', size: firma.length }];
+    const originalMeta = Object.values(files).flat().map((f) => ({ campo: f.campo, path: f.path, nombre: f.nombre, mime: f.mime, bytes: f.size }));
 
     const { data: ins, error: e1 } = await sb
       .from('afiliaciones')
@@ -91,46 +102,51 @@ export default async function handler(req, res) {
         fuerza: datos.fuerza,
         localidad: datos.localidad,
         datos,
+        archivos: originalMeta,
         token,
         ip: dir,
         user_agent: String(req.headers['user-agent'] || '').slice(0, 255),
         historial: [{ fecha: ahora, estado: 'pendiente', usuario: 'Formulario web', nota: 'Solicitud recibida' }],
       })
-      .select('id, created_at')
+      .select('*')
       .single();
     if (e1) {
+      console.error('Supabase: insertar afiliación', e1);
       if (e1.code === '23505') return json(res, 409, { error: 'Ya existe una solicitud de afiliación para este documento.', errores: { nro_documento: 'Ya registrado.' } });
       throw e1;
     }
+    registrada = ins;
 
     const id = ins.id;
     const anio = ins.created_at.slice(0, 4);
-    const nro = `AF-${anio}-${String(id).padStart(5, '0')}`;
+    const nro = ins.nro_tramite;
     const base = `${anio}/${nro}`;
 
-    // Mover adjuntos a la carpeta definitiva y guardar la firma.
+    // Copiar antes de actualizar las rutas. Si falla, el registro conserva
+    // los originales válidos y nunca queda apuntando a archivos inexistentes.
     const meta = [];
+    const originalesCopiados = [];
     const cuenta = {};
     for (const campo of Object.keys(files)) {
       for (const f of files[campo]) {
         cuenta[campo] = (cuenta[campo] || 0) + 1;
         const ext = f.path.split('.').pop();
         const dest = `${base}/${campo.replace('adj_', '')}-${cuenta[campo]}.${ext}`;
-        const { error } = await sb.storage.from(BUCKET).move(f.path, dest);
+        const { error } = await sb.storage.from(BUCKET).copy(f.path, dest);
+        if (error) console.error('Supabase: organizar adjunto; se conserva original', { campo, code: error.code, message: error.message });
+        else originalesCopiados.push(f.path);
         const path = error ? f.path : dest;
         f.path = path;
         meta.push({ campo, path, nombre: f.nombre, mime: f.mime, bytes: f.size });
       }
     }
-    const fpath = `${base}/firma.png`;
-    const { error: ef } = await sb.storage.from(BUCKET).upload(fpath, firma, { contentType: 'image/png', upsert: true });
-    if (!ef) {
-      meta.push({ campo: 'firma', path: fpath, nombre: 'firma.png', mime: 'image/png', bytes: firma.length });
-      files.firma = [{ campo: 'firma', mime: 'image/png', bytes: new Uint8Array(firma), nombre: 'firma.png' }];
+    const { data: organizada, error: e2 } = await sb.from('afiliaciones').update({ archivos: meta }).eq('id', id).select('*').single();
+    const row = e2 ? ins : organizada;
+    if (e2) console.error('Supabase: actualizar rutas; se conservan originales registrados', e2);
+    else if (originalesCopiados.length) {
+      const { error } = await sb.storage.from(BUCKET).remove(originalesCopiados);
+      if (error) console.error('Supabase: limpiar copias temporales', error);
     }
-
-    const { data: row, error: e2 } = await sb.from('afiliaciones').update({ nro_tramite: nro, archivos: meta }).eq('id', id).select('*').single();
-    if (e2) throw e2;
 
     // Correos (si fallan, la afiliación igual queda registrada).
     let correo = true;
@@ -152,6 +168,15 @@ export default async function handler(req, res) {
     json(res, 200, { nro, id, token, ficha: `/api/ficha?id=${id}&t=${token}`, correo, correoAfiliado });
   } catch (e) {
     console.error('enviar', e);
-    json(res, 500, { error: 'No pudimos guardar la solicitud. Probá de nuevo en unos minutos.' });
+    // Nunca inducir un segundo envío si el INSERT ya se confirmó.
+    if (registrada) return json(res, 200, {
+      nro: registrada.nro_tramite, id: registrada.id, token: registrada.token,
+      ficha: `/api/ficha?id=${registrada.id}&t=${registrada.token}`,
+      correo: false, correoAfiliado: false,
+      advertencia: 'La solicitud quedó registrada. Descargá tu ficha; no hace falta volver a enviarla.',
+    });
+    json(res, e.code === 'SUPABASE_CONFIG' ? 503 : 500, { error: e.code === 'SUPABASE_CONFIG'
+      ? 'El servicio de afiliaciones todavía no está configurado. Comunicate con PE.CI.F.A. para completar tu solicitud.'
+      : 'No pudimos registrar la solicitud en la base de datos. Revisá la conexión e intentá de nuevo. Si continúa, comunicate con PE.CI.F.A.' });
   }
 }

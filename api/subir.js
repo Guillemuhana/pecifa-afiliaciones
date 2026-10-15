@@ -35,6 +35,8 @@ export default async function handler(req, res) {
     json(res, 200, { draft, ts, sig: firmar(`${draft}.${ts}`), uploads });
   } catch (e) {
     console.error('subir', e);
-    json(res, 500, { error: 'No pudimos preparar la subida de archivos. Probá de nuevo.' });
+    json(res, e.code === 'SUPABASE_CONFIG' ? 503 : 500, { error: e.code === 'SUPABASE_CONFIG'
+      ? 'El servicio de afiliaciones todavía no está configurado. Comunicate con PE.CI.F.A.'
+      : 'No pudimos preparar la subida de archivos. Verificá tu conexión; si continúa, comunicate con PE.CI.F.A.' });
   }
 }

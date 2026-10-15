@@ -334,8 +334,12 @@ body { margin: 0; background: #e9eef6; }
 .pcf-head__content { flex: 1; min-width: 0; position: relative; z-index: 1; }
 .pcf-head__brand { display: flex; gap: 22px; align-items: center; margin-bottom: 28px; }
 .pcf-head__logo { width: 176px; height: 176px; flex-basis: 176px; object-fit: contain; background: transparent; box-shadow: none; border-radius: 0; clip-path: ellipse(45% 45.5% at 49.5% 48.5%); }
-.pcf-head__logo-frame { position: relative; display: block; width: 176px; height: 176px; flex: 0 0 176px; }
-.pcf-head__logo-frame::after { content: ''; position: absolute; left: 4.5%; top: 3%; width: 90%; height: 91%; border: 2px solid #fff; border-radius: 50%; pointer-events: none; }
+.pcf-head__logo-frame { position: relative; display: block; width: 176px; height: 176px; flex: 0 0 176px; isolation: isolate; }
+.pcf-head__logo-frame::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; clip-path: ellipse(45% 45.5% at 49.5% 48.5%); background: linear-gradient(115deg, transparent 38%, #ffffff12 43%, #ffffffad 49%, #ffffff24 55%, transparent 61%) -240% 0 / 220% 100% no-repeat; animation: pcf-logo-light 7s ease-in-out infinite; }
+.pcf-head__logo-frame::after { content: ''; position: absolute; left: 4.5%; top: 3%; width: 90%; height: 91%; border: 2px solid #fff; border-radius: 50%; pointer-events: none; box-shadow: 0 0 12px #eed19355, 0 0 26px #8abfff25; animation: pcf-logo-glow 7s ease-in-out infinite; }
+@keyframes pcf-logo-light { 0%, 12% { background-position: -240% 0; opacity: 0; } 15% { opacity: 1; } 38% { background-position: 240% 0; opacity: 1; } 42%, 100% { background-position: 240% 0; opacity: 0; } }
+@keyframes pcf-logo-glow { 0%, 12%, 48%, 100% { box-shadow: 0 0 12px #eed19355, 0 0 26px #8abfff25; } 28% { box-shadow: 0 0 18px #f5d48a99, 0 0 38px #8abfff55; } }
+@media (prefers-reduced-motion: reduce) { .pcf-head__logo-frame::before { animation: none; opacity: 0; } .pcf-head__logo-frame::after { animation: none; } }
 .pcf-head__name { display: block; font-size: clamp(34px, 3.8vw, 48px); font-weight: 800; line-height: 1.15; letter-spacing: .035em; color: #fff; }
 .pcf-head__union { margin: 12px 0 0; max-width: 460px; font-size: 20px; font-weight: 600; line-height: 1.5; color: #e5edf9; text-wrap: pretty; }
 .pcf-head__kicker { display: block; color: #eed193; font-size: 11px; font-weight: 700; letter-spacing: .16em; margin-bottom: 10px; opacity: 1; }

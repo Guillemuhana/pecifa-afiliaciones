@@ -522,3 +522,53 @@ body { margin: 0; background: #e9eef6; }
   .pcf-head__bottom { margin: 0 -20px; padding: 12px 16px 14px; }
   .pcf-head__tag { font-size: 21px; }
 }
+
+/* Adaptación al espacio real del formulario, incluso junto al panel lateral */
+.pcf-layout > .pcf-form { container-type: inline-size; container-name: ficha; }
+.pcf-head__brand > div { min-width: 0; }
+.pcf-head__union, .pcf-help, .pcf-receipt, .pcf-global-err { overflow-wrap: anywhere; }
+.pcf-fam > .pcf-input { min-width: 0; }
+.pcf-firma__acl { max-width: calc(100% - 36px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@container ficha (max-width: 720px) {
+  .pcf-col-half, .pcf-col-twothird, .pcf-col-threequarter { grid-column: span 12; }
+  .pcf-col-third, .pcf-col-quarter { grid-column: span 6; }
+  .pcf-col-sixth { grid-column: span 4; }
+  .pcf-t-digits.pcf-col-sixth[data-key="tel_numero"] { grid-column: span 8; }
+  .pcf-fam--head { display: none; }
+  .pcf-fam { grid-template-columns: 26px minmax(0, 1fr) minmax(0, 1fr) 32px; grid-template-areas: 'n nom nom del' '. par dni .' '. nac nac .'; padding: 12px 0; border-bottom: 1px solid var(--pcf-line); }
+  .pcf-fam > :nth-child(1) { grid-area: n; }
+  .pcf-fam > :nth-child(2) { grid-area: nom; }
+  .pcf-fam > :nth-child(3) { grid-area: par; }
+  .pcf-fam > :nth-child(4) { grid-area: dni; }
+  .pcf-fam > :nth-child(5) { grid-area: nac; }
+  .pcf-fam > :nth-child(6) { grid-area: del; }
+}
+@container ficha (max-width: 420px) {
+  .pcf-col-third, .pcf-col-quarter { grid-column: span 12; }
+  .pcf-fam { grid-template-columns: 26px minmax(0, 1fr) 32px; grid-template-areas: 'n nom del' 'par par par' 'dni dni dni' 'nac nac nac'; }
+  .pcf-drop { padding: 14px 12px; }
+  .pcf-drop__txt { flex: 1; min-width: 0; }
+  .pcf-ok__btns .pcf-btn { width: 100%; }
+}
+@media (pointer: coarse) {
+  .pcf-btn, .pcf-chip span { min-height: 48px; }
+  .pcf-file__x, .pcf-fam__del { min-height: 44px; }
+  .pcf-firma__clear { min-height: 44px; }
+}
+@media (max-width: 360px) {
+  .pcf-head { padding: 16px 16px 0; }
+  .pcf-head__brand { gap: 8px; }
+  .pcf-head__logo-frame { width: 84px; height: 84px; flex-basis: 84px; }
+  .pcf-head__logo { width: 84px; height: 84px; }
+  .pcf-head__name { font-size: 25px; }
+  .pcf-head__union { font-size: 12px; }
+  .pcf-head__label-row { gap: 8px; }
+  .pcf-head__promise { font-size: 11px; padding-left: 8px; gap: 5px; }
+  .pcf-head__t { font-size: 26px; }
+  .pcf-head__bottom { margin: 0 -16px; }
+  .pcf-head__tag { font-size: 19px; }
+  .pcf-sec__t { font-size: 16px; }
+  .pcf-journey strong { font-size: 11px; }
+  .pcf-journey small { line-height: 1.5; }
+}
+@media (max-height: 500px) and (max-width: 1000px) { .pcf-tracker { position: static; } }

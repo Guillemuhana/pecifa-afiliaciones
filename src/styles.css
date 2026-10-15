@@ -512,8 +512,8 @@ body { margin: 0; background: #e9eef6; }
 @media (max-width: 520px) {
   .pcf-head { grid-template-columns: minmax(0, 1fr); padding: 20px 20px 0; gap: 20px; border-radius: 0 0 20px 20px; }
   .pcf-head__brand { gap: 12px; padding-bottom: 18px; }
-  .pcf-head__logo-frame { width: 100px; height: 100px; flex-basis: 100px; }
-  .pcf-head__logo { width: 100px; height: 100px; }
+  .pcf-head__logo-frame { width: 116px; height: 116px; flex-basis: 116px; }
+  .pcf-head__logo { width: 116px; height: 116px; }
   .pcf-head__name { font-size: 28px; }
   .pcf-head__union { font-size: 13px; margin-top: 6px; line-height: 1.5; }
   .pcf-head__t { font-size: 29px; }
@@ -558,8 +558,8 @@ body { margin: 0; background: #e9eef6; }
 @media (max-width: 360px) {
   .pcf-head { padding: 16px 16px 0; }
   .pcf-head__brand { gap: 8px; }
-  .pcf-head__logo-frame { width: 84px; height: 84px; flex-basis: 84px; }
-  .pcf-head__logo { width: 84px; height: 84px; }
+  .pcf-head__logo-frame { width: 98px; height: 98px; flex-basis: 98px; }
+  .pcf-head__logo { width: 98px; height: 98px; }
   .pcf-head__name { font-size: 25px; }
   .pcf-head__union { font-size: 12px; }
   .pcf-head__label-row { gap: 8px; }

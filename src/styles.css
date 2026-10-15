@@ -333,7 +333,7 @@ body { margin: 0; background: #e9eef6; }
 .pcf-head::after { height: 4px; background: linear-gradient(90deg, #bd902e, #f2d891, #bd902e); }
 .pcf-head__content { flex: 1; min-width: 0; position: relative; z-index: 1; }
 .pcf-head__brand { display: flex; gap: 14px; align-items: center; margin-bottom: 28px; }
-.pcf-head__logo { width: 128px; height: 128px; flex-basis: 128px; object-fit: contain; }
+.pcf-head__logo { width: 176px; height: 176px; flex-basis: 176px; object-fit: contain; background: transparent; box-shadow: none; border-radius: 0; clip-path: ellipse(45% 45.5% at 49.5% 48.5%); }
 .pcf-head__name { font-size: 23px; letter-spacing: .08em; }
 .pcf-head__union { margin: 2px 0 0; max-width: 285px; font-size: 12px; color: #cdddf2; }
 .pcf-head__kicker { display: block; color: #eed193; font-size: 11px; font-weight: 700; letter-spacing: .16em; margin-bottom: 10px; opacity: 1; }
@@ -369,7 +369,7 @@ body { margin: 0; background: #e9eef6; }
 @media (max-width: 520px) {
   .pcf-head { padding: 24px 20px 28px; min-height: 0; }
   .pcf-head__brand { margin-bottom: 24px; gap: 10px; }
-  .pcf-head__logo { width: 96px; height: 96px; flex-basis: 96px; }
+  .pcf-head__logo { width: 120px; height: 120px; flex-basis: 120px; }
   .pcf-head__name { font-size: 19px; }
   .pcf-head__union { font-size: 10px; max-width: 240px; }
   .pcf-head__kicker { display: block; }

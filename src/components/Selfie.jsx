@@ -5,6 +5,7 @@ import { prepararArchivo } from '../lib/imagen.js';
 export default function Selfie({ value, onChange }) {
   const video = useRef(null);
   const stream = useRef(null);
+  const archivo = useRef(null);
   const [modo, setModo] = useState('idle'); // idle | camara | foto
   const [msg, setMsg] = useState('');
   const [preview, setPreview] = useState('');
@@ -87,26 +88,32 @@ export default function Selfie({ value, onChange }) {
   };
 
   return (
-    <div className="pcf-selfie">
+    <div className={`pcf-selfie pcf-selfie--${modo}`}>
       <div className="pcf-selfie__view">
         {modo === 'camara' && <video ref={video} playsInline muted autoPlay />}
         {modo === 'foto' && preview && <img src={preview} alt="Tu selfie" />}
         {modo === 'idle' && (
           <div className="pcf-selfie__ph" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="54" height="54" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+            <div className="pcf-selfie__frame"><svg viewBox="0 0 80 88" width="80" height="88" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 23V12a5 5 0 0 1 5-5h11m28 0h11a5 5 0 0 1 5 5v11M10 65v11a5 5 0 0 0 5 5h11m28 0h11a5 5 0 0 0 5-5V65" /><ellipse cx="40" cy="35" rx="14" ry="17" /><path d="M19 69c2-19 40-19 42 0" /></svg></div>
+            <span>Tu foto va acá</span>
           </div>
         )}
-        {modo !== 'foto' && <div className="pcf-selfie__oval" aria-hidden="true" />}
+        {modo === 'camara' && <div className="pcf-selfie__oval" aria-hidden="true" />}
+        {modo === 'camara' && <span className="pcf-selfie__live">Cámara activa</span>}
       </div>
       <div className="pcf-selfie__side">
+        <span className="pcf-selfie__eyebrow">{modo === 'foto' ? 'Foto adjuntada' : 'Un último paso para conocerte'}</span>
+        <h3 className="pcf-selfie__title">{modo === 'foto' ? 'Tu foto está lista' : 'Sumá tu foto de identidad'}</h3>
+        <p className="pcf-selfie__description">{modo === 'foto' ? 'Revisá que tu rostro se vea completo y con claridad antes de enviar la solicitud.' : 'Podés sacarte una selfie ahora o elegir una foto que ya tengas.'}</p>
         <ul className="pcf-selfie__tips">
-          <li>Mirá de frente y ubicá la cara dentro del óvalo.</li>
-          <li>Buena luz, sin anteojos de sol, gorra ni barbijo.</li>
-          <li>Fondo liso si podés.</li>
+          <li>Rostro de frente y completo</li>
+          <li>Buena luz y fondo simple</li>
+          <li>Sin gorra ni anteojos de sol</li>
         </ul>
         <div className="pcf-selfie__btns">
           {modo === 'idle' && (
             <button type="button" className="pcf-btn pcf-btn--primary" onClick={abrir}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m8 5 2-2h4l2 2h4v15H4V5Z" /><circle cx="12" cy="12" r="4" /></svg>
               Abrir cámara
             </button>
           )}
@@ -120,10 +127,11 @@ export default function Selfie({ value, onChange }) {
               Volver a sacar
             </button>
           )}
-          <label className="pcf-btn pcf-btn--ghost">
-            Subir una foto
-            <input type="file" accept="image/*" capture="user" hidden onChange={subir} />
-          </label>
+          <button type="button" className="pcf-btn pcf-btn--ghost" onClick={() => archivo.current?.click()}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8" cy="8" r="1.5" /><path d="m3 17 5-5 4 4 4-6 5 7" /></svg>
+            Elegir una foto
+          </button>
+          <input ref={archivo} type="file" accept="image/jpeg,image/png" hidden onChange={subir} />
         </div>
         {modo === 'foto' && <p className="pcf-selfie__msg pcf-selfie__ok">✓ Foto lista</p>}
         {msg && (

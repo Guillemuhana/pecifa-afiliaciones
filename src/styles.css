@@ -383,3 +383,31 @@ body { margin: 0; background: #e9eef6; }
   .pcf-sec { padding: 18px 14px 6px; }
   .pcf-submit-note { text-align: center; align-self: center; }
 }
+
+/* Foto de identidad */
+.pcf-selfie { align-items: stretch; flex-wrap: nowrap; gap: 28px; padding: 22px; border: 1px solid #e1e8f2; border-radius: 18px; background: linear-gradient(120deg, #f4f7fc, #fff 75%); }
+.pcf-selfie__view { width: 180px; height: 220px; flex: 0 0 180px; border-radius: 14px; border: 1px solid #d8e3f2; background: linear-gradient(145deg, #e9f0fb, #f8fbff); }
+.pcf-selfie__ph { display: flex; flex-direction: column; justify-content: center; gap: 16px; color: #5575a1; }
+.pcf-selfie__ph > span { font-size: 12px; font-weight: 600; color: #647c9c; }
+.pcf-selfie__frame { display: grid; place-items: center; width: 100px; height: 106px; color: #4e76ad; }
+.pcf-selfie__side { min-width: 0; justify-content: center; gap: 10px; }
+.pcf-selfie__eyebrow { text-transform: uppercase; letter-spacing: .11em; font-size: 10px; font-weight: 800; color: #5575a1; }
+.pcf-selfie__title { margin: 0; font-size: 21px; line-height: 1.25; letter-spacing: -.025em; color: var(--pcf-navy); }
+.pcf-selfie__description { margin: 0; max-width: 440px; font-size: 14px; color: var(--pcf-muted); }
+.pcf-selfie__tips { display: flex; flex-wrap: wrap; gap: 6px 14px; list-style: none; padding: 0; margin: 2px 0 6px; font-size: 12px; }
+.pcf-selfie__tips li::before { content: '\2713'; color: #397857; margin-right: 6px; font-weight: 700; }
+.pcf-selfie__btns { gap: 10px; }
+.pcf-selfie__btns .pcf-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; padding: 10px 16px; }
+.pcf-selfie__live { position: absolute; top: 10px; left: 10px; padding: 4px 8px; border-radius: 99px; background: #102341cf; color: #fff; font-size: 10px; }
+.pcf-selfie--foto .pcf-selfie__view { border-color: #a9cfb7; }
+.pcf-selfie__ok { display: inline-flex; align-self: flex-start; padding: 4px 10px; background: #e9f6ed; border-radius: 99px; }
+@media (max-width: 650px) {
+  .pcf-selfie { flex-direction: column; align-items: center; gap: 20px; padding: 20px 16px; }
+  .pcf-selfie__view { width: 156px; height: 196px; flex: 0 0 196px; }
+  .pcf-selfie__side { align-items: center; text-align: center; width: 100%; }
+  .pcf-selfie__title { font-size: 20px; }
+  .pcf-selfie__tips { justify-content: center; }
+  .pcf-selfie__btns { width: 100%; justify-content: center; }
+  .pcf-selfie__btns .pcf-btn { flex: 1 1 160px; }
+  .pcf-selfie__ok { align-self: center; }
+}

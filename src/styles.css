@@ -332,10 +332,10 @@ body { margin: 0; background: #e9eef6; }
 .pcf-head { min-height: 350px; padding: 36px 40px 38px; gap: 20px; background: radial-gradient(ellipse at 90% 20%, #215ca0, transparent 65%), linear-gradient(125deg, #0a1e43, #123d73); }
 .pcf-head::after { height: 4px; background: linear-gradient(90deg, #bd902e, #f2d891, #bd902e); }
 .pcf-head__content { flex: 1; min-width: 0; position: relative; z-index: 1; }
-.pcf-head__brand { display: flex; gap: 14px; align-items: center; margin-bottom: 28px; }
+.pcf-head__brand { display: flex; gap: 22px; align-items: center; margin-bottom: 28px; }
 .pcf-head__logo { width: 176px; height: 176px; flex-basis: 176px; object-fit: contain; background: transparent; box-shadow: none; border-radius: 0; clip-path: ellipse(45% 45.5% at 49.5% 48.5%); }
-.pcf-head__name { font-size: 23px; letter-spacing: .08em; }
-.pcf-head__union { margin: 2px 0 0; max-width: 285px; font-size: 12px; color: #cdddf2; }
+.pcf-head__name { display: block; font-size: clamp(34px, 3.8vw, 48px); font-weight: 800; line-height: 1.15; letter-spacing: .035em; color: #fff; }
+.pcf-head__union { margin: 12px 0 0; max-width: 460px; font-size: 20px; font-weight: 600; line-height: 1.5; color: #e5edf9; text-wrap: pretty; }
 .pcf-head__kicker { display: block; color: #eed193; font-size: 11px; font-weight: 700; letter-spacing: .16em; margin-bottom: 10px; opacity: 1; }
 .pcf-head__t { font-size: clamp(29px, 3.6vw, 40px); letter-spacing: -.035em; line-height: 1.15; max-width: 520px; }
 .pcf-head__s { max-width: 500px; color: #dce7f6; font-size: 15px; line-height: 1.7; margin-top: 16px; }
@@ -362,6 +362,7 @@ body { margin: 0; background: #e9eef6; }
 .pcf-wrap :is(a, button, input, select, canvas):focus-visible { outline: 3px solid #bd902e; outline-offset: 3px; }
 @media (max-width: 700px) {
   .pcf-head { padding: 28px 24px; gap: 12px; }
+  .pcf-head__brand { flex-direction: column; align-items: flex-start; gap: 12px; }
   .pcf-head__art { width: 22%; }
   .pcf-journey { gap: 12px; }
   .pcf-journey li { align-items: flex-start; flex-direction: column; }
@@ -370,8 +371,9 @@ body { margin: 0; background: #e9eef6; }
   .pcf-head { padding: 24px 20px 28px; min-height: 0; }
   .pcf-head__brand { margin-bottom: 24px; gap: 10px; }
   .pcf-head__logo { width: 120px; height: 120px; flex-basis: 120px; }
-  .pcf-head__name { font-size: 19px; }
-  .pcf-head__union { font-size: 10px; max-width: 240px; }
+  .pcf-head__brand { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .pcf-head__name { font-size: 34px; }
+  .pcf-head__union { font-size: 17px; max-width: 360px; margin-top: 8px; }
   .pcf-head__kicker { display: block; }
   .pcf-head__t { max-width: 290px; font-size: 32px; }
   .pcf-head__s { font-size: 14px; }

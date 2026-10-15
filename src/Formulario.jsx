@@ -154,12 +154,20 @@ export default function Formulario() {
     <div className={`pcf-page${embed ? ' pcf-page--embed' : ''}`}>
       <div className="pcf-wrap">
         <header className="pcf-head">
+          <div className="pcf-head__content">
+          <div className="pcf-head__brand">
           <img className="pcf-head__logo" src="/logo.png" alt="PE.CI.F.A." width="72" height="72" />
           <div>
-            <p className="pcf-head__kicker">PE.CI.F.A. · Unión del Personal Civil de las Fuerzas Armadas</p>
-            <h1 className="pcf-head__t">Ficha de Afiliación</h1>
-            <p className="pcf-head__s">Solicitud de inscripción como afiliado ACTIVO</p>
+            <strong className="pcf-head__name">PE.CI.F.A.</strong>
+            <p className="pcf-head__union">Unión del Personal Civil de las Fuerzas Armadas</p>
           </div>
+          </div>
+          <p className="pcf-head__kicker">Afiliación online</p>
+          <h1 className="pcf-head__t">Tu afiliación empieza acá.</h1>
+          <p className="pcf-head__s">Completá tu ficha y firmá desde tu celular o computadora. Al finalizar, obtené tu número de trámite y descargá tu constancia.</p>
+          <span className="pcf-head__tag">La unión es el camino</span>
+          </div>
+          <img className="pcf-head__art" src="/afiliacion-pecifa.png" alt="" width="1254" height="1254" fetchPriority="high" />
         </header>
 
         {ok ? (
@@ -171,8 +179,12 @@ export default function Formulario() {
             <p>Tu número de trámite es</p>
             <p className="pcf-ok__nro">{ok.nro}</p>
             <p className="pcf-ok__txt">
-              Guardalo para cualquier consulta. Te enviamos la ficha firmada en PDF a <strong>{norm.email}</strong>. Si tu seccional te la pide impresa, descargala acá.
+              Guardalo para cualquier consulta. Tu solicitud quedó registrada y está pendiente de revisión; el número de trámite todavía no es tu número de afiliado.
             </p>
+            <div className={`pcf-receipt${ok.correoAfiliado ? '' : ' pcf-receipt--pending'}`}>
+              <strong>{ok.correoAfiliado ? 'Constancia enviada por correo' : 'Tu solicitud está guardada; el correo no pudo enviarse'}</strong>
+              <p>{ok.correoAfiliado ? <>Enviamos el número de trámite y tu ficha firmada en PDF a <strong>{norm.email}</strong>. Revisá también la carpeta de spam.</> : <>Descargá tu ficha y guardá el número de trámite. No hace falta volver a enviar la solicitud. Si necesitás ayuda, escribinos a <a href="mailto:info@pecifa.org">info@pecifa.org</a>.</>}</p>
+            </div>
             <div className="pcf-ok__btns">
               <a className="pcf-btn pcf-btn--primary" href={ok.ficha}>
                 Descargar mi ficha (PDF)
@@ -184,8 +196,15 @@ export default function Formulario() {
           </section>
         ) : (
           <form ref={formRef} className="pcf-form" onSubmit={enviar} noValidate>
+            <ol className="pcf-journey" aria-label="Pasos de la solicitud">
+              <li><span>01</span><div><strong>Completá tus datos</strong><small>Personales y laborales</small></div></li>
+              <li><span>02</span><div><strong>Adjuntá y firmá</strong><small>Documentación, selfie y firma</small></div></li>
+              <li><span>03</span><div><strong>Recibí tu constancia</strong><small>Número de trámite y ficha PDF</small></div></li>
+            </ol>
+            <div className="pcf-prepare"><strong>Antes de empezar</strong><p>Tené a mano tu DNI (frente y dorso), el último recibo de haberes y tu CBU. Si incluís familiares, prepará también su documentación.</p></div>
+            <h2 className="pcf-form__title">Ficha de afiliación</h2>
             <p className="pcf-intro">
-              Completá tus datos, adjuntá la documentación, sacate una selfie y firmá en pantalla. Al enviar recibís un número de trámite y tu ficha en PDF. <span className="pcf-req">*</span> Campos obligatorios.
+              Solicitud de inscripción como afiliado activo. <span className="pcf-req">*</span> Campos obligatorios.
             </p>
             <div className="pcf-hp" aria-hidden="true">
               <label>
@@ -251,6 +270,7 @@ export default function Formulario() {
               <button type="submit" className="pcf-btn pcf-btn--primary pcf-submit" disabled={enviando}>
                 {enviando ? 'Enviando…' : 'Enviar solicitud'}
               </button>
+              <p className="pcf-submit-note">Al enviar verás tu número de trámite y podrás descargar la ficha. También intentaremos enviarte la constancia al correo que ingresaste.</p>
             </div>
           </form>
         )}

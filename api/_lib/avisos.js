@@ -53,10 +53,11 @@ export async function constanciaAfiliado(row, req, files) {
   const pdf = await generarPdf(row, files, { expediente: false, lugar: lugarFicha() });
   const link = `${baseUrl(req)}/api/ficha?id=${row.id}&t=${row.token}`;
   const html = layout(
-    'Afiliación',
+    'Recibimos tu solicitud',
     `<p>Hola ${esc(row.nombres)},</p>
 <p>Recibimos tu solicitud de <strong>afiliación</strong>. Tu número de trámite es:</p>
 <p style="font-size:24px;font-weight:bold;letter-spacing:1px;color:#0f2a5c;margin:8px 0">${esc(row.nro_tramite)}</p>
+<p style="background:#f2f5fa;padding:14px 16px;border-left:4px solid #c9a227"><strong>Estado: pendiente de revisión.</strong><br>Guardá este número para consultar por tu solicitud. Todavía no es tu número de afiliado; tu afiliación debe ser revisada por PE.CI.F.A.</p>
 <p>Te adjuntamos tu ficha firmada en PDF. También podés descargarla cuando quieras:</p>
 ${boton(link, 'Descargar mi ficha')}
 <p style="font-size:13px;color:#6b7690">Este enlace es personal: no lo compartas. Ante cualquier duda escribinos a info@pecifa.org.</p>`

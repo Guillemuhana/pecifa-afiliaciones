@@ -141,13 +141,15 @@ export default async function handler(req, res) {
       console.error('aviso interno', e);
       await sb.from('afiliaciones').update({ historial: [...row.historial, { fecha: new Date().toISOString(), estado: 'pendiente', usuario: 'Sistema', nota: 'No se pudo enviar el aviso por correo: ' + String(e.message || e).slice(0, 200) }] }).eq('id', id);
     }
+    let correoAfiliado = false;
     try {
       await constanciaAfiliado(row, req, files);
+      correoAfiliado = true;
     } catch (e) {
       console.error('constancia', e);
     }
 
-    json(res, 200, { nro, id, token, ficha: `/api/ficha?id=${id}&t=${token}`, correo });
+    json(res, 200, { nro, id, token, ficha: `/api/ficha?id=${id}&t=${token}`, correo, correoAfiliado });
   } catch (e) {
     console.error('enviar', e);
     json(res, 500, { error: 'No pudimos guardar la solicitud. Probá de nuevo en unos minutos.' });

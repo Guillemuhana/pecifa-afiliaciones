@@ -325,3 +325,61 @@ body { margin: 0; background: #e9eef6; }
 .adm-fams { width: 100%; border-collapse: collapse; font-size: 14px; }
 .adm-fams th, .adm-fams td { padding: 6px; border-bottom: 1px solid #f0f2f6; text-align: left; }
 .adm-more { display: flex; justify-content: center; margin: 14px 0; }
+
+/* Presentación de la afiliación */
+.pcf-page { background: radial-gradient(ellipse at top left, #dce8f8, transparent 60%), #edf1f7; }
+.pcf-wrap { max-width: 1040px; --pcf-radius: 16px; }
+.pcf-head { min-height: 350px; padding: 36px 40px 38px; gap: 20px; background: radial-gradient(ellipse at 90% 20%, #215ca0, transparent 65%), linear-gradient(125deg, #0a1e43, #123d73); }
+.pcf-head::after { height: 4px; background: linear-gradient(90deg, #bd902e, #f2d891, #bd902e); }
+.pcf-head__content { flex: 1; min-width: 0; position: relative; z-index: 1; }
+.pcf-head__brand { display: flex; gap: 14px; align-items: center; margin-bottom: 28px; }
+.pcf-head__logo { width: 60px; height: 60px; flex-basis: 60px; }
+.pcf-head__name { font-size: 23px; letter-spacing: .08em; }
+.pcf-head__union { margin: 2px 0 0; max-width: 285px; font-size: 12px; color: #cdddf2; }
+.pcf-head__kicker { display: block; color: #eed193; font-size: 11px; font-weight: 700; letter-spacing: .16em; margin-bottom: 10px; opacity: 1; }
+.pcf-head__t { font-size: clamp(29px, 3.6vw, 40px); letter-spacing: -.035em; line-height: 1.15; max-width: 520px; }
+.pcf-head__s { max-width: 500px; color: #dce7f6; font-size: 15px; line-height: 1.7; margin-top: 16px; }
+.pcf-head__tag { display: inline-block; margin-top: 20px; padding: 6px 12px; border: 1px solid #ffffff30; border-radius: 99px; color: #eed193; font-size: 12px; }
+.pcf-head__art { width: 32%; max-width: 310px; height: auto; object-fit: contain; filter: drop-shadow(0 16px 18px #0003); }
+.pcf-form { padding: 28px; background: #f7f9fc; }
+.pcf-journey { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; list-style: none; padding: 0 0 24px; margin: 0 0 22px; border-bottom: 1px solid var(--pcf-line); }
+.pcf-journey li { display: flex; gap: 10px; align-items: center; }
+.pcf-journey li > span { display: grid; place-items: center; flex: 0 0 36px; height: 36px; border-radius: 10px; background: #e7eef9; color: var(--pcf-navy); font-weight: 800; font-size: 13px; }
+.pcf-journey strong { display: block; font-size: 13px; color: var(--pcf-navy); }
+.pcf-journey small { display: block; font-size: 11px; color: var(--pcf-muted); margin-top: 2px; }
+.pcf-prepare { border: 1px solid #e5d7b5; background: #fffaf0; border-radius: 12px; padding: 16px 20px; margin-bottom: 26px; }
+.pcf-prepare strong { font-size: 14px; color: #70531c; }
+.pcf-prepare p { font-size: 14px; color: #6e624b; margin: 4px 0 0; }
+.pcf-form__title { font-size: 23px; color: var(--pcf-navy); letter-spacing: -.025em; margin: 0 0 6px; }
+.pcf-sec { padding: 22px 24px 10px; margin-bottom: 20px; box-shadow: 0 3px 12px #152d5405; }
+.pcf-sec__n { border-radius: 8px; background: #e8effa; color: var(--pcf-navy); }
+.pcf-submit-note { max-width: 500px; align-self: flex-end; text-align: right; color: var(--pcf-muted); font-size: 12px; margin: 0; }
+.pcf-receipt { max-width: 560px; margin: 0 auto 24px; padding: 18px; background: #edf7f0; border: 1px solid #cce6d3; border-radius: 12px; text-align: left; font-size: 14px; }
+.pcf-receipt strong { color: #175c35; }
+.pcf-receipt p { margin: 6px 0 0; overflow-wrap: anywhere; }
+.pcf-receipt--pending { background: #fff8e9; border-color: #e8d5a7; }
+.pcf-receipt--pending strong { color: #775718; }
+.pcf-wrap :is(a, button, input, select, canvas):focus-visible { outline: 3px solid #bd902e; outline-offset: 3px; }
+@media (max-width: 700px) {
+  .pcf-head { padding: 28px 24px; gap: 12px; }
+  .pcf-head__art { width: 26%; }
+  .pcf-journey { gap: 12px; }
+  .pcf-journey li { align-items: flex-start; flex-direction: column; }
+}
+@media (max-width: 520px) {
+  .pcf-head { padding: 24px 20px 28px; min-height: 0; }
+  .pcf-head__brand { margin-bottom: 24px; gap: 10px; }
+  .pcf-head__logo { width: 48px; height: 48px; flex-basis: 48px; }
+  .pcf-head__name { font-size: 19px; }
+  .pcf-head__union { font-size: 10px; max-width: 240px; }
+  .pcf-head__kicker { display: block; }
+  .pcf-head__t { max-width: 290px; font-size: 32px; }
+  .pcf-head__s { font-size: 14px; }
+  .pcf-head__art { display: none; }
+  .pcf-form { padding: 20px 14px; }
+  .pcf-journey { gap: 8px; padding-bottom: 18px; }
+  .pcf-journey strong { font-size: 12px; }
+  .pcf-journey small { font-size: 10px; }
+  .pcf-sec { padding: 18px 14px 6px; }
+  .pcf-submit-note { text-align: center; align-self: center; }
+}

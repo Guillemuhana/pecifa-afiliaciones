@@ -343,7 +343,7 @@ body { margin: 0; background: #e9eef6; }
 .pcf-head__promise > span { color: #eed193; }
 .pcf-head__t { font-size: clamp(29px, 3.6vw, 40px); letter-spacing: -.035em; line-height: 1.15; max-width: 520px; }
 .pcf-head__s { max-width: 500px; color: #dce7f6; font-size: 15px; line-height: 1.7; margin-top: 16px; }
-.pcf-head__tag { display: inline-block; margin-top: 20px; padding: 6px 12px; border: 1px solid #ffffff30; border-radius: 99px; color: #eed193; font-size: 12px; }
+.pcf-head__tag { display: block; width: fit-content; max-width: 100%; margin: 28px auto 0; padding: 10px 24px; border: 1px solid #eed19355; border-radius: 99px; background: #ffffff08; color: #f3dca5; font-size: clamp(20px, 2.3vw, 28px); font-weight: 700; line-height: 1.35; text-align: center; letter-spacing: .015em; }
 .pcf-head__art { width: 27%; max-width: 260px; height: auto; object-fit: contain; filter: drop-shadow(0 16px 18px #0003); }
 .pcf-form { padding: 28px; background: #f7f9fc; }
 .pcf-journey { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; list-style: none; padding: 0 0 24px; margin: 0 0 22px; border-bottom: 1px solid var(--pcf-line); }

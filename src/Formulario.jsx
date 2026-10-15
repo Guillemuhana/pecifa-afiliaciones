@@ -158,7 +158,7 @@ export default function Formulario() {
         <header className="pcf-head">
           <div className="pcf-head__content">
           <div className="pcf-head__brand">
-          <img className="pcf-head__logo" src="/logo.png" alt="PE.CI.F.A." width="72" height="72" />
+          <span className="pcf-head__logo-frame"><img className="pcf-head__logo" src="/logo.png" alt="PE.CI.F.A." width="176" height="176" /></span>
           <div>
             <strong className="pcf-head__name">PE.CI.F.A.</strong>
             <p className="pcf-head__union">Unión del Personal Civil de las Fuerzas Armadas OSFA y de Seguridad</p>

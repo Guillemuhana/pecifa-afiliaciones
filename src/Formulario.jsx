@@ -159,7 +159,7 @@ export default function Formulario() {
           <img className="pcf-head__logo" src="/logo.png" alt="PE.CI.F.A." width="72" height="72" />
           <div>
             <strong className="pcf-head__name">PE.CI.F.A.</strong>
-            <p className="pcf-head__union">Unión del Personal Civil de las Fuerzas Armadas</p>
+            <p className="pcf-head__union">Unión del Personal Civil de las Fuerzas Armadas OSFA y de Seguridad</p>
           </div>
           </div>
           <p className="pcf-head__kicker">Afiliación online</p>

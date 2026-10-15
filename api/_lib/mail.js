@@ -63,7 +63,7 @@ export function layout(titulo, cuerpo) {
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:10px;overflow:hidden">
 <tr><td style="background:#0f2a5c;padding:18px 24px;color:#fff;font-size:18px;font-weight:bold;border-bottom:4px solid #c9a227">PE.CI.F.A. · ${esc(titulo)}</td></tr>
 <tr><td style="padding:24px;font-size:15px;line-height:1.55">${cuerpo}</td></tr>
-<tr><td style="padding:14px 24px;background:#f7f9fc;color:#6b7690;font-size:12px">Unión del Personal Civil de las Fuerzas Armadas · Av. La Plata 2047 (1250) CABA · www.pecifa.org</td></tr>
+<tr><td style="padding:14px 24px;background:#f7f9fc;color:#6b7690;font-size:12px">Unión del Personal Civil de las Fuerzas Armadas OSFA y de Seguridad · Av. La Plata 2047 (1250) CABA · www.pecifa.org</td></tr>
 </table></td></tr></table></body></html>`;
 }
 

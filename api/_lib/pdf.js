@@ -162,7 +162,7 @@ export async function generarPdf(row, files = {}, { expediente = false, lugar = 
   h.campo(ML + W - 62, y, 62, 'Afiliado N.º', row.nro_afiliado || '');
   h.text(ML, y + 4.6, `Trámite web N.º ${row.nro_tramite}`, { size: 7.5, color: GRIS });
 
-  y = h.para(ML, y + 11, W, 'Me dirijo al compañero secretario general de la Unión del Personal Civil de las Fuerzas Armadas, con el objeto de solicitarle mi inscripción como afiliado ACTIVO.');
+  y = h.para(ML, y + 11, W, 'Me dirijo al compañero secretario general de la Unión del Personal Civil de las Fuerzas Armadas OSFA y de Seguridad, con el objeto de solicitarle mi inscripción como afiliado ACTIVO.');
   y += 5;
   h.casillas(y, [
     [d.categoria === 'personal_civil', 'PERSONAL CIVIL'],
@@ -320,7 +320,7 @@ export async function generarPdf(row, files = {}, { expediente = false, lugar = 
     a.text(ML + 86, fy, `Fecha y hora: ${d.firma_fecha ? fechaHora(d.firma_fecha, true) : '-'} (hora Argentina)`, { size: 9.5 });
     a.text(ML + 86, fy + 4.6, `IP: ${d.firma_ip || '-'}`, { size: 9.5 });
   }
-  a.text(ML, 287, 'PE.CI.F.A. · Unión del Personal Civil de las Fuerzas Armadas · Personería Gremial N.º 825 · Av. La Plata 2047 (1250) CABA · www.pecifa.org', { size: 7.5, color: GRIS });
+  a.para(ML, 287, W, 'PE.CI.F.A. · Unión del Personal Civil de las Fuerzas Armadas OSFA y de Seguridad · Personería Gremial N.º 825 · Av. La Plata 2047 (1250) CABA · www.pecifa.org', { size: 7.5, lh: 3, color: GRIS });
 
   /* ---------------- Documentos adjuntos ---------------- */
   if (expediente) {

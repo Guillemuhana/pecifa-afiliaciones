@@ -25,6 +25,7 @@ export async function avisoInterno(row, req, files = null) {
     ['CUIL', formatoCuil(row.cuil)],
     ['Fuerza', row.fuerza],
     ['Localidad', row.localidad],
+    ['Afiliado por', d.afiliado_por || 'No indicado'],
     ['Teléfono', row.telefono],
     ['Correo', row.email],
     ['Familiares', fams ? `${fams} declarado(s)` : 'No'],

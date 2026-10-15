@@ -480,3 +480,45 @@ body { margin: 0; background: #e9eef6; }
   .pcf-tracker { width: calc(100% - 28px); align-self: center; border-radius: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .pcf-tracker__bar span, .pcf-sec { transition: none; } }
+
+/* Encabezado institucional: identidad, presentación y lema */
+.pcf-head { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 22px 36px; min-height: 0; padding: 24px 36px 0; background: radial-gradient(ellipse at 100% 0, #224f80 0, transparent 65%), #102c50; border-radius: 20px; box-shadow: 0 8px 24px #102c5012; }
+.pcf-head__brand { grid-column: 1 / -1; display: flex; flex-direction: row; align-items: center; gap: 24px; padding-bottom: 18px; margin: 0; border-bottom: 1px solid #ffffff20; }
+.pcf-head__logo-frame { width: 148px; height: 148px; flex: 0 0 148px; }
+.pcf-head__logo { display: block; width: 148px; height: 148px; }
+.pcf-head__name { font-size: 40px; letter-spacing: .045em; font-weight: 800; }
+.pcf-head__union { margin-top: 8px; max-width: 680px; font-size: 18px; line-height: 1.5; font-weight: 500; color: #d6e2f1; }
+.pcf-head__content { align-self: center; max-width: 720px; padding: 4px 0; }
+.pcf-head__label-row { gap: 10px 14px; margin-bottom: 12px; }
+.pcf-head__kicker { font-size: 10px; letter-spacing: .14em; }
+.pcf-head__promise { padding: 0 0 0 14px; border: 0; border-left: 1px solid #ffffff40; border-radius: 0; background: transparent; font-size: 12px; }
+.pcf-head__t { font-size: clamp(28px, 3vw, 36px); max-width: none; line-height: 1.2; letter-spacing: -.035em; }
+.pcf-head__s { margin: 12px 0 0; max-width: 650px; font-size: 15px; line-height: 1.65; color: #c9d8ea; }
+.pcf-head__art { display: block; width: 190px; max-width: 100%; height: 190px; margin: 0 auto; filter: drop-shadow(0 8px 14px #0002); }
+.pcf-head__bottom { grid-column: 1 / -1; margin: 0 -36px; padding: 13px 24px 15px; text-align: center; border-top: 1px solid #ffffff14; background: #081c342e; }
+.pcf-head__tag { display: inline-block; width: auto; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; font-size: 23px; font-weight: 600; letter-spacing: .015em; color: #eed193; }
+.pcf-layout { margin-top: 20px; }
+.pcf-tracker { scrollbar-width: thin; scrollbar-color: #d5dfed transparent; }
+@media (max-width: 700px) {
+  .pcf-head { grid-template-columns: minmax(0, 1fr) 138px; padding: 20px 24px 0; gap: 18px 16px; }
+  .pcf-head__brand { gap: 16px; }
+  .pcf-head__logo-frame { width: 120px; height: 120px; flex-basis: 120px; }
+  .pcf-head__logo { width: 120px; height: 120px; }
+  .pcf-head__name { font-size: 32px; }
+  .pcf-head__union { font-size: 15px; }
+  .pcf-head__art { width: 138px; height: 160px; }
+  .pcf-head__bottom { margin: 0 -24px; }
+}
+@media (max-width: 520px) {
+  .pcf-head { grid-template-columns: minmax(0, 1fr); padding: 20px 20px 0; gap: 20px; border-radius: 0 0 20px 20px; }
+  .pcf-head__brand { gap: 12px; padding-bottom: 18px; }
+  .pcf-head__logo-frame { width: 100px; height: 100px; flex-basis: 100px; }
+  .pcf-head__logo { width: 100px; height: 100px; }
+  .pcf-head__name { font-size: 28px; }
+  .pcf-head__union { font-size: 13px; margin-top: 6px; line-height: 1.5; }
+  .pcf-head__t { font-size: 29px; }
+  .pcf-head__s { font-size: 14px; }
+  .pcf-head__art { display: none; }
+  .pcf-head__bottom { margin: 0 -20px; padding: 12px 16px 14px; }
+  .pcf-head__tag { font-size: 21px; }
+}

@@ -156,7 +156,6 @@ export default function Formulario() {
     <div className={`pcf-page${embed ? ' pcf-page--embed' : ''}`}>
       <div className="pcf-wrap">
         <header className="pcf-head">
-          <div className="pcf-head__content">
           <div className="pcf-head__brand">
           <span className="pcf-head__logo-frame"><img className="pcf-head__logo" src="/logo.png" alt="PE.CI.F.A." width="176" height="176" /></span>
           <div>
@@ -164,15 +163,16 @@ export default function Formulario() {
             <p className="pcf-head__union">Unión del Personal Civil de las Fuerzas Armadas OSFA y de Seguridad</p>
           </div>
           </div>
+          <div className="pcf-head__content">
           <div className="pcf-head__label-row">
             <p className="pcf-head__kicker">Afiliación online</p>
             <span className="pcf-head__promise">Fácil <span aria-hidden="true">·</span> Simple <span aria-hidden="true">·</span> Seguro</span>
           </div>
           <h1 className="pcf-head__t">Tu afiliación empieza acá.</h1>
           <p className="pcf-head__s">Completá tu ficha y firmá desde tu celular o computadora. Al finalizar, obtené tu número de trámite y descargá tu constancia.</p>
-          <span className="pcf-head__tag">La unión es el camino</span>
           </div>
           <img className="pcf-head__art" src="/afiliacion-pecifa.png" alt="" width="1254" height="1254" fetchPriority="high" />
+          <div className="pcf-head__bottom"><span className="pcf-head__tag">La unión es el camino</span></div>
         </header>
 
         {ok ? (

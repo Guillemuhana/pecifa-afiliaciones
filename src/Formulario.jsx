@@ -6,6 +6,7 @@ import FirmaPad from './components/FirmaPad.jsx';
 import Selfie from './components/Selfie.jsx';
 import Archivos from './components/Archivos.jsx';
 import Familiares from './components/Familiares.jsx';
+import { progresoFicha } from '../lib/progreso.js';
 
 const embed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('embed');
 
@@ -31,6 +32,7 @@ export default function Formulario() {
   const formRef = useRef(null);
 
   const norm = useMemo(() => validarTodo(datos).datos, [datos]);
+  const avance = useMemo(() => progresoFicha(datos, files, firma), [datos, files, firma]);
 
   const set = (k, v) => {
     setDatos((d) => ({ ...d, [k]: v }));
@@ -195,6 +197,7 @@ export default function Formulario() {
             </div>
           </section>
         ) : (
+          <div className="pcf-layout">
           <form ref={formRef} className="pcf-form" onSubmit={enviar} noValidate>
             <ol className="pcf-journey" aria-label="Pasos de la solicitud">
               <li><span>01</span><div><strong>Completá tus datos</strong><small>Personales y laborales</small></div></li>
@@ -213,12 +216,12 @@ export default function Formulario() {
               </label>
             </div>
 
-            {SECCIONES.map((sec) => {
+            {SECCIONES.map((sec, index) => {
               const visibles = Object.entries(sec.campos).filter(([, f]) => condOk(f, norm));
               if (!visibles.length) return null;
               n += 1;
               return (
-                <fieldset className="pcf-sec" key={sec.titulo}>
+                <fieldset className="pcf-sec" id={`seccion-${index}`} key={sec.titulo}>
                   <legend className="pcf-sec__t">
                     <span className="pcf-sec__n">{n}</span>
                     {sec.titulo}
@@ -253,7 +256,7 @@ export default function Formulario() {
               );
             })}
 
-            <div className="pcf-actions">
+            <div className="pcf-actions" id="enviar-solicitud">
               {global && (
                 <div className="pcf-global-err" role="alert">
                   {global}
@@ -273,6 +276,27 @@ export default function Formulario() {
               <p className="pcf-submit-note">Al enviar verás tu número de trámite y podrás descargar la ficha. También intentaremos enviarte la constancia al correo que ingresaste.</p>
             </div>
           </form>
+          <aside className="pcf-tracker" aria-label="Avance de tu ficha">
+            <div className="pcf-tracker__top">
+              <div><span className="pcf-tracker__eyebrow">Paso a paso</span><h2>Tu ficha de afiliación</h2></div>
+              <div className="pcf-tracker__ring" style={{ '--avance': `${avance.porcentaje}%` }} aria-hidden="true"><strong>{avance.porcentaje}<small>%</small></strong></div>
+            </div>
+            <div className="pcf-tracker__bar" role="progressbar" aria-label="Ficha completada" aria-valuemin={0} aria-valuemax={100} aria-valuenow={avance.porcentaje}><span style={{ width: `${avance.porcentaje}%` }} /></div>
+            <p className="pcf-tracker__summary">{avance.porcentaje === 100 ? '¡Todo listo! Revisá tu ficha y enviá la solicitud.' : `${avance.completos} de ${avance.total} requisitos completos`}</p>
+            <nav aria-label="Secciones de la ficha" className="pcf-tracker__sections">
+              {avance.secciones.map((sec, index) => {
+                const completa = sec.total > 0 && sec.completos === sec.total;
+                const actual = avance.siguiente?.id === sec.id;
+                return <a key={sec.id} href={`#${sec.id}`} className={`${completa ? 'is-complete' : ''}${actual ? ' is-current' : ''}`} aria-current={actual ? 'step' : undefined}>
+                  <span className="pcf-tracker__step" aria-hidden="true">{completa ? '✓' : String(index + 1).padStart(2, '0')}</span>
+                  <span className="pcf-tracker__section-name">{sec.titulo}<small>{sec.total ? (completa ? 'Completo' : `${sec.completos} de ${sec.total} completos`) : 'Opcional'}</small></span>
+                </a>;
+              })}
+            </nav>
+            <a className="pcf-tracker__next" href={avance.siguiente ? `#${avance.siguiente.id}` : '#enviar-solicitud'}>{avance.siguiente ? 'Continuar completando' : 'Revisar y enviar'} <span aria-hidden="true">→</span></a>
+            <p className="pcf-tracker__note">El avance cuenta los datos obligatorios válidos, tus adjuntos y la firma. La solicitud se registra al enviarla.</p>
+          </aside>
+          </div>
         )}
         {!embed && (
           <p className="pcf-foot">

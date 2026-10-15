@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://pecifa-afiliaciones.vercel.app/sitemap.xml

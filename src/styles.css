@@ -572,3 +572,17 @@ body { margin: 0; background: #e9eef6; }
   .pcf-journey small { line-height: 1.5; }
 }
 @media (max-height: 500px) and (max-width: 1000px) { .pcf-tracker { position: static; } }
+
+/* Orientación para quienes buscan afiliarse */
+.pcf-faq { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 36px; margin-top: 28px; padding: 30px; border: 1px solid #dce4ef; border-radius: 20px; background: #fff; }
+.pcf-faq__intro > span { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: #8b6b27; font-weight: 700; }
+.pcf-faq h2 { color: var(--pcf-navy); font-size: 24px; line-height: 1.3; margin: 10px 0; letter-spacing: -.025em; }
+.pcf-faq p { color: var(--pcf-muted); font-size: 14px; line-height: 1.7; margin: 0 0 12px; }
+.pcf-faq details { border-bottom: 1px solid #e6ecf4; padding: 15px 0; }
+.pcf-faq details:first-child { padding-top: 0; }
+.pcf-faq details:last-child { border-bottom: 0; padding-bottom: 0; }
+.pcf-faq summary { cursor: pointer; color: var(--pcf-navy); font-size: 15px; font-weight: 700; }
+.pcf-faq details[open] summary { margin-bottom: 10px; }
+.pcf-faq a { color: #195baa; text-underline-offset: 3px; }
+@media (max-width: 700px) { .pcf-faq { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 22px; } }
+@media (max-width: 520px) { .pcf-faq { margin: 20px 14px 0; padding: 20px 16px; border-radius: 14px; } }

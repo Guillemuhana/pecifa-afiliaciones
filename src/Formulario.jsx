@@ -168,8 +168,8 @@ export default function Formulario() {
             <p className="pcf-head__kicker">Afiliación online</p>
             <span className="pcf-head__promise">Fácil <span aria-hidden="true">·</span> Simple <span aria-hidden="true">·</span> Seguro</span>
           </div>
-          <h1 className="pcf-head__t">Tu afiliación empieza acá.</h1>
-          <p className="pcf-head__s">Completá tu ficha y firmá desde tu celular o computadora. Al finalizar, obtené tu número de trámite y descargá tu constancia.</p>
+          <h1 className="pcf-head__t">Afiliación PECIFA para personal civil.</h1>
+          <p className="pcf-head__s">Personal civil y docente civil de las Fuerzas Armadas, OSFA y de Seguridad: completá tu ficha y firmá desde tu celular o computadora. Al finalizar, obtené tu número de trámite y descargá tu constancia.</p>
           </div>
           <img className="pcf-head__art" src="/afiliacion-pecifa.png" alt="" width="1254" height="1254" fetchPriority="high" />
           <div className="pcf-head__bottom"><span className="pcf-head__tag">La unión es el camino</span></div>
@@ -301,6 +301,16 @@ export default function Formulario() {
           </aside>
           </div>
         )}
+        {!ok && !embed && <section className="pcf-faq" aria-labelledby="preguntas-afiliacion">
+          <div className="pcf-faq__intro"><span>Te acompañamos</span><h2 id="preguntas-afiliacion">Cómo afiliarse a PECIFA</h2><p>Información para completar la solicitud de afiliación del personal civil y docente civil.</p></div>
+          <div className="pcf-faq__items">
+            <details><summary>¿Cómo solicito mi afiliación online?</summary><p>Completá los datos personales y laborales, elegí tu condición de personal civil o docente civil y tu situación de revista. Después adjuntá la documentación, agregá tu foto de identidad y firmá la ficha. PE.CI.F.A. revisará tu solicitud.</p></details>
+            <details><summary>¿Qué necesito para completar la ficha?</summary><p>Tené a mano tu DNI de frente y dorso, el último recibo de haberes, tu CUIL y tu CBU. Si declarás familiares, adjuntá también su documentación según corresponda.</p></details>
+            <details><summary>¿Puedo afiliarme desde el celular?</summary><p>Sí. Podés completar la ficha desde el celular, fotografiar los documentos, tomar tu selfie y firmar con el dedo. También podés usar una computadora.</p></details>
+            <details><summary>¿El número de trámite es mi número de afiliado?</summary><p>No. El número de trámite identifica tu solicitud mientras está pendiente de revisión. Al enviarla, podés descargar tu ficha firmada en PDF. La confirmación de la afiliación corresponde a PE.CI.F.A.</p></details>
+            <details><summary>¿Dónde consulto sobre requisitos o mi solicitud?</summary><p>Consultá con tu seccional o escribí a <a href="mailto:info@pecifa.org">info@pecifa.org</a>. Podés encontrar más información institucional en <a href="https://www.pecifa.org">el sitio de PE.CI.F.A.</a>.</p></details>
+          </div>
+        </section>}
         {!embed && (
           <p className="pcf-foot">
             ¿Dudas? Escribinos a <a href="mailto:info@pecifa.org">info@pecifa.org</a> · <a href="https://www.pecifa.org">www.pecifa.org</a>

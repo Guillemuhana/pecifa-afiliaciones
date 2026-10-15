@@ -337,6 +337,10 @@ body { margin: 0; background: #e9eef6; }
 .pcf-head__name { display: block; font-size: clamp(34px, 3.8vw, 48px); font-weight: 800; line-height: 1.15; letter-spacing: .035em; color: #fff; }
 .pcf-head__union { margin: 12px 0 0; max-width: 460px; font-size: 20px; font-weight: 600; line-height: 1.5; color: #e5edf9; text-wrap: pretty; }
 .pcf-head__kicker { display: block; color: #eed193; font-size: 11px; font-weight: 700; letter-spacing: .16em; margin-bottom: 10px; opacity: 1; }
+.pcf-head__label-row { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.pcf-head__label-row .pcf-head__kicker { margin: 0; }
+.pcf-head__promise { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border: 1px solid #ffffff25; border-radius: 99px; background: #ffffff0a; color: #e0eaf8; font-size: 12px; font-weight: 500; }
+.pcf-head__promise > span { color: #eed193; }
 .pcf-head__t { font-size: clamp(29px, 3.6vw, 40px); letter-spacing: -.035em; line-height: 1.15; max-width: 520px; }
 .pcf-head__s { max-width: 500px; color: #dce7f6; font-size: 15px; line-height: 1.7; margin-top: 16px; }
 .pcf-head__tag { display: inline-block; margin-top: 20px; padding: 6px 12px; border: 1px solid #ffffff30; border-radius: 99px; color: #eed193; font-size: 12px; }

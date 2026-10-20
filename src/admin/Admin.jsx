@@ -2,8 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Routes, Route, useLocation, useParams, Link } from 'react-router-dom';
 import { Copy, Download, Mail, Phone, Share2 } from 'lucide-react';
 import { supabase, supabaseOk, BUCKET } from '../supabase.js';
-import { SECCIONES, ESTADOS, NOMBRE_ARCHIVO, legible, formatoCuil, fechaHora, condOk, esArchivo } from '../../lib/schema.js';
-import { tamano } from '../lib/imagen.js';
+import { SECCIONES, ESTADOS, legible, formatoCuil, fechaHora, condOk, esArchivo } from '../../lib/schema.js';
+import Documentos from './Documentos.jsx';
 import PanelLayout from './PanelLayout.jsx';
 import { saveBlob } from './management.js';
 import { AccessRecovery } from './AdminBoundary.jsx';
@@ -158,6 +158,10 @@ function Detalle({ usuario }) {
   const selfie = archivo('adj_selfie');
   const firma = archivo('firma');
 
+  useEffect(() => {
+    if (row && location.hash === '#documentos') document.getElementById('documentos')?.scrollIntoView();
+  }, [row, location.hash]);
+
   const guardar = async (e) => {
     e.preventDefault();
     setBusy('guardar');
@@ -264,6 +268,7 @@ function Detalle({ usuario }) {
 
       <div className="adm-cols">
         <div>
+          <Documentos key={row.id} archivos={row.archivos || []} />
           <div className="adm-box">
             <h2>Identidad y firma</h2>
             <div className="adm-idf">
@@ -334,25 +339,6 @@ function Detalle({ usuario }) {
               </div>
             );
           })}
-
-          <div className="adm-box">
-            <h2>Documentación</h2>
-            <ul className="adm-docs">
-              {(row.archivos || []).map((a) => (
-                <li key={a.path}>
-                  <span className="k">{NOMBRE_ARCHIVO[a.campo] || a.campo}</span>
-                  <span className="n">
-                    {a.nombre} <span style={{ color: '#9aa5b8' }}>({tamano(a.bytes || 0)})</span>
-                  </span>
-                  {urls[a.path] && (
-                    <a className="adm-btn" href={urls[a.path]} target="_blank" rel="noreferrer">
-                      Ver
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
 
           <div className="adm-box">
             <h2>Datos técnicos</h2>

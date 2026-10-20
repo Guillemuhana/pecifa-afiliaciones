@@ -18,7 +18,7 @@ const records = Array.from({ length: 63 }, (_, index) => ({
   archivos: [], historial: [], notas: '=Texto ingresado por una persona', token: 'MUST-NOT-BE-EXPORTED',
 }));
 
-async function mockPanel(page, { empty = false, fail = false } = {}) {
+async function mockPanel(page, { empty = false, fail = false, files = null, fileError = false } = {}) {
   await page.clock.setFixedTime(new Date('2026-10-20T15:00:00Z'));
   await page.addInitScript(() => {
     localStorage.setItem('pecifa-admin', JSON.stringify({ access_token: 'fake-access-token', refresh_token: 'fake-refresh-token', expires_at: 2000000000, expires_in: 3600, token_type: 'bearer', user: { id: 'staff-test', aud: 'authenticated', role: 'authenticated', email: 'staff@example.org', app_metadata: { provider: 'email' }, user_metadata: {} } }));
@@ -26,9 +26,9 @@ async function mockPanel(page, { empty = false, fail = false } = {}) {
   await page.route('https://pecifa-test.supabase.co/**', async route => {
     const url = new URL(route.request().url());
     if (url.pathname.includes('/staff')) return route.fulfill({ json: [{ email: 'staff@example.org', nombre: 'Equipo PECIFA' }] });
-    if (url.pathname.includes('/afiliaciones')) {
+    if (url.pathname.startsWith('/rest/v1/afiliaciones')) {
       if (fail) return route.fulfill({ status: 500, json: { message: 'Error de prueba de conexión' } });
-      let data = empty ? [] : records;
+      let data = empty ? [] : records.map((row, index) => files && index === 0 ? { ...row, archivos: files } : row);
       const id = url.searchParams.get('id');
       if (id?.startsWith('eq.')) data = data.filter(row => row.id === id.slice(3));
       if (id?.startsWith('in.')) data = data.filter(row => id.includes(row.id));
@@ -38,6 +38,15 @@ async function mockPanel(page, { empty = false, fail = false } = {}) {
       // Mimic a Supabase project with a low row cap to exercise complete pagination.
       data = data.slice(offset, offset + Math.min(limit, 30));
       return route.fulfill({ headers: { 'content-range': `${offset}-${offset + data.length - 1}/${total}`, 'access-control-expose-headers': 'content-range', 'access-control-allow-origin': '*' }, json: data });
+    }
+    if (url.pathname.includes('/storage/v1/object/')) {
+      if (fileError) return route.fulfill({ status: 404, json: { statusCode: '404', message: 'Object not found' } });
+      if (route.request().method() === 'POST') {
+        const body = route.request().postDataJSON();
+        if (body.paths) return route.fulfill({ json: body.paths.map(path => ({ path, signedURL: `/object/sign/afiliaciones/${path}?token=test`, error: null })) });
+        return route.fulfill({ json: { signedURL: '/object/sign/afiliaciones/test.pdf?token=test' } });
+      }
+      return route.fulfill({ contentType: 'application/pdf', body: '%PDF-1.4 test attachment' });
     }
     return route.fulfill({ json: {} });
   });
@@ -61,6 +70,41 @@ test('resumen completo, filtros persistentes entre vistas y paginación', async 
   await page.goto('/admin');
   await expect(page.getByText('63 de 63 solicitudes')).toBeVisible();
   await page.screenshot({ path: 'test-results/panel-nacional-escritorio.png', fullPage: true });
+});
+
+test('recibo y DNI visibles al abrir la ficha, con descarga individual y vista previa', async ({ page }) => {
+  await mockPanel(page, { files: [
+    { campo: 'adj_recibo', nombre: 'recibo.pdf', path: 'test/recibo.pdf', mime: 'application/pdf', bytes: 1200 },
+    { campo: 'adj_dni', nombre: 'dni-frente.pdf', path: 'test/dni-frente.pdf', mime: 'application/pdf', bytes: 800 },
+    { campo: 'adj_dni', nombre: 'dni-dorso.pdf', path: 'test/dni-dorso.pdf', mime: 'application/pdf', bytes: 900 },
+  ] });
+  await page.goto('/admin?vista=base&q=perez');
+  await page.getByRole('link', { name: 'Ver adjuntos de Pérez, Ana' }).click();
+  await expect(page.getByRole('heading', { name: 'Documentos del solicitante' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Recibo de haberes', exact: true })).toContainText('recibo.pdf');
+  await expect(page.getByRole('region', { name: 'DNI · frente y dorso', exact: true })).toContainText('dni-dorso.pdf');
+  const receipt = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Descargar recibo.pdf', exact: true }).click();
+  const receiptFile = await receipt;
+  expect(receiptFile.suggestedFilename()).toBe('recibo.pdf');
+  const { readFile } = await import('node:fs/promises');
+  expect(await readFile(await receiptFile.path(), 'utf8')).toBe('%PDF-1.4 test attachment');
+  const dni = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Descargar dni-frente.pdf', exact: true }).click();
+  expect((await dni).suggestedFilename()).toBe('dni-frente.pdf');
+  await page.getByRole('button', { name: 'Ver dni-dorso.pdf', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByTitle('dni-dorso.pdf', { exact: true })).toHaveAttribute('src', /object\/sign\/afiliaciones/);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+});
+
+test('un archivo ausente informa el error y no ofrece una descarga ficticia', async ({ page }) => {
+  await mockPanel(page, { files: [{ campo: 'adj_recibo', nombre: 'recibo.pdf', path: 'test/missing.pdf', mime: 'application/pdf', bytes: 1200 }], fileError: true });
+  await page.goto(`/admin/${records[0].id}`);
+  await expect(page.getByText('No hay un DNI registrado en esta solicitud.')).toBeVisible();
+  await page.getByRole('button', { name: 'Descargar recibo.pdf', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('No se pudo descargar el documento');
 });
 
 test('exporta toda la base y una selección en Excel sin límites silenciosos', async ({ page }) => {

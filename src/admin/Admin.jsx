@@ -6,6 +6,7 @@ import { SECCIONES, ESTADOS, NOMBRE_ARCHIVO, legible, formatoCuil, fechaHora, co
 import { tamano } from '../lib/imagen.js';
 import PanelLayout from './PanelLayout.jsx';
 import { saveBlob } from './management.js';
+import { AccessRecovery } from './AdminBoundary.jsx';
 
 const Login = lazy(() => import('./Login.jsx'));
 const Dashboard = lazy(() => import('./Dashboard.jsx'));
@@ -44,12 +45,25 @@ const Badge = ({ e }) => <span className={`badge ${e}`}>{ESTADOS[e] || e}</span>
 export default function Admin() {
   const [sesion, setSesion] = useState(undefined);
   const [staff, setStaff] = useState(null);
+  const [sessionError, setSessionError] = useState(false);
 
   useEffect(() => {
     if (!supabaseOk) return undefined;
-    supabase.auth.getSession().then(({ data }) => setSesion(data.session));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSesion(s));
-    return () => data.subscription.unsubscribe();
+    let active = true;
+    const timeout = setTimeout(() => { if (active) setSessionError(true); }, 12000);
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!active) return;
+      clearTimeout(timeout);
+      if (error) setSessionError(true);
+      else { setSessionError(false); setSesion(data.session); }
+    }).catch(() => { if (active) { clearTimeout(timeout); setSessionError(true); } });
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (!active) return;
+      clearTimeout(timeout);
+      setSessionError(false);
+      setSesion(s);
+    });
+    return () => { active = false; clearTimeout(timeout); data.subscription.unsubscribe(); };
   }, []);
 
   useEffect(() => {
@@ -74,7 +88,8 @@ export default function Admin() {
         </div>
       </div>
     );
-  if (sesion === undefined) return <div className="adm" />;
+  if (sessionError) return <AccessRecovery session />;
+  if (sesion === undefined) return <div className="adm admin-loading" role="status">Preparando acceso al panel…</div>;
   if (!sesion) return <Suspense fallback={<div className="adm" role="status">Cargando acceso…</div>}><Login /></Suspense>;
   if (staff === false)
     return (

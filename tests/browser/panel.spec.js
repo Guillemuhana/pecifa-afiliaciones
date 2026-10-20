@@ -150,3 +150,27 @@ test('errores de carga bloquean exportaciones y la base vacía explica el estado
   await expect(page.getByRole('alert')).toContainText('No se pudo cargar la base');
   await expect(page.getByRole('button', { name: 'Descargar Excel', exact: true })).toBeDisabled();
 });
+
+test('recupera una pestaña que intenta cargar un módulo anterior al despliegue', async ({ page }) => {
+  await mockPanel(page);
+  let interrupted = 0;
+  await page.route('**/src/admin/Dashboard.jsx*', async route => {
+    if (interrupted++ === 0) return route.abort('failed');
+    return route.continue();
+  });
+  await page.goto('/admin', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('63 de 63 solicitudes')).toBeVisible({ timeout: 15000 });
+  expect(interrupted).toBeGreaterThanOrEqual(2);
+});
+
+test('un error del panel muestra recuperación en lugar de una página vacía', async ({ page }) => {
+  await mockPanel(page);
+  await page.route('**/src/admin/Dashboard.jsx*', route => route.fulfill({
+    contentType: 'application/javascript',
+    body: 'export default function Dashboard() { throw new Error("Simulated render failure"); }',
+  }));
+  await page.goto('/admin');
+  await expect(page.getByRole('heading', { name: 'No pudimos abrir el panel' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Volver a cargar', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Volver al ingreso', exact: true })).toBeVisible();
+});

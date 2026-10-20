@@ -1,8 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { Routes, Route, useLocation, useParams, Link } from 'react-router-dom';
+import { Copy, Download, Mail, Phone, Share2 } from 'lucide-react';
 import { supabase, supabaseOk, BUCKET } from '../supabase.js';
-import { SECCIONES, ESTADOS, CAMPOS, NOMBRE_ARCHIVO, legible, formatoCuil, fechaHora, condOk, esArchivo } from '../../lib/schema.js';
+import { SECCIONES, ESTADOS, NOMBRE_ARCHIVO, legible, formatoCuil, fechaHora, condOk, esArchivo } from '../../lib/schema.js';
 import { tamano } from '../lib/imagen.js';
+import PanelLayout from './PanelLayout.jsx';
+import { saveBlob } from './management.js';
+
+const Login = lazy(() => import('./Login.jsx'));
+const Dashboard = lazy(() => import('./Dashboard.jsx'));
 
 /* ------------------------------------------------------------------ */
 async function api(accion, body = {}) {
@@ -69,7 +75,7 @@ export default function Admin() {
       </div>
     );
   if (sesion === undefined) return <div className="adm" />;
-  if (!sesion) return <Login />;
+  if (!sesion) return <Suspense fallback={<div className="adm" role="status">Cargando acceso…</div>}><Login /></Suspense>;
   if (staff === false)
     return (
       <div className="adm">
@@ -84,255 +90,30 @@ export default function Admin() {
       </div>
     );
 
+  if (staff === null) return <div className="adm" role="status">Verificando acceso al panel…</div>;
+
   return (
-    <div className="adm">
-      <div className="adm-bar">
-        <img src="/logo.png" alt="" />
-        <strong>Afiliaciones PECIFA</strong>
-        <span className="sp" />
-        <span style={{ fontSize: 14, opacity: 0.85 }}>{staff?.nombre || sesion.user.email}</span>
-        <button onClick={() => supabase.auth.signOut()}>Salir</button>
-      </div>
-      <div className="adm-main">
+    <PanelLayout usuario={staff?.nombre || sesion.user.email}>
+      <Suspense fallback={<p role="status">Cargando panel…</p>}>
         <Routes>
-          <Route index element={<Listado />} />
+          <Route index element={<Dashboard />} />
           <Route path=":id" element={<Detalle usuario={staff?.nombre || sesion.user.email} />} />
         </Routes>
-      </div>
-    </div>
+      </Suspense>
+    </PanelLayout>
   );
 }
 
-function Login() {
-  const [email, setEmail] = useState('');
-  const [pass, setPass] = useState('');
-  const [msg, setMsg] = useState(null);
-  const [cargando, setCargando] = useState(false);
-  const entrar = async (e) => {
-    e.preventDefault();
-    setCargando(true);
-    setMsg(null);
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: pass });
-    setCargando(false);
-    if (error) setMsg({ t: 'err', m: 'Correo o contraseña incorrectos.' });
-  };
-  const olvide = async () => {
-    if (!email.trim()) return setMsg({ t: 'warn', m: 'Escribí tu correo y tocá de nuevo «Olvidé mi contraseña».' });
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${location.origin}/admin` });
-    setMsg(error ? { t: 'err', m: 'No se pudo enviar el correo.' } : { t: 'ok', m: 'Te enviamos un correo para restablecer la contraseña.' });
-  };
-  return (
-    <div className="adm">
-      <div className="adm-login">
-        <img src="/logo.png" alt="" />
-        <h1>Panel de afiliaciones</h1>
-        {msg && <div className={`adm-msg ${msg.t}`}>{msg.m}</div>}
-        <form onSubmit={entrar}>
-          <input type="email" placeholder="Correo" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <input type="password" placeholder="Contraseña" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} required />
-          <button className="adm-btn adm-btn--pri" disabled={cargando} style={{ justifyContent: 'center', height: 44 }}>
-            {cargando ? 'Ingresando…' : 'Ingresar'}
-          </button>
-          <button type="button" className="adm-btn" style={{ justifyContent: 'center', border: 0 }} onClick={olvide}>
-            Olvidé mi contraseña
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-const POR_PAGINA = 50;
-
-function Listado() {
-  const nav = useNavigate();
-  const [rows, setRows] = useState([]);
-  const [conteo, setConteo] = useState({});
-  const [q, setQ] = useState('');
-  const [estado, setEstado] = useState('');
-  const [desde, setDesde] = useState('');
-  const [hasta, setHasta] = useState('');
-  const [total, setTotal] = useState(0);
-  const [pag, setPag] = useState(1);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState('');
-
-  const consulta = useCallback(
-    (sel, opts) => {
-      let x = supabase.from('afiliaciones').select(sel, opts);
-      if (estado) x = x.eq('estado', estado);
-      if (desde) x = x.gte('created_at', desde + 'T03:00:00Z');
-      if (hasta) x = x.lte('created_at', new Date(new Date(hasta + 'T03:00:00Z').getTime() + 86399999).toISOString());
-      const t = q.trim().replace(/[%,()]/g, ' ');
-      if (t) x = x.or(['apellido', 'nombres', 'dni', 'cuil', 'email', 'nro_tramite', 'nro_afiliado', 'fuerza', 'localidad'].map((c) => `${c}.ilike.%${t}%`).join(','));
-      return x;
-    },
-    [q, estado, desde, hasta]
-  );
-
-  const cargar = useCallback(async () => {
-    setCargando(true);
-    setError('');
-    const { data, count, error: e } = await consulta('id,nro_tramite,estado,apellido,nombres,dni,fuerza,localidad,created_at,nro_afiliado,archivos', { count: 'exact' })
-      .order('created_at', { ascending: false }).order('id', { ascending: false })
-      .range(0, pag * POR_PAGINA - 1);
-    if (e) setError(e.message);
-    setRows(data || []);
-    setTotal(count || 0);
-    setCargando(false);
-  }, [consulta, pag]);
-
-  useEffect(() => {
-    const t = setTimeout(cargar, q ? 300 : 0);
-    return () => clearTimeout(t);
-  }, [cargar, q]);
-
-  useEffect(() => {
-    (async () => {
-      const c = {};
-      await Promise.all(
-        Object.keys(ESTADOS).map(async (e) => {
-          const { count } = await supabase.from('afiliaciones').select('id', { count: 'exact', head: true }).eq('estado', e);
-          c[e] = count || 0;
-        })
-      );
-      setConteo(c);
-    })();
-  }, [rows.length]);
-
-  const exportar = async () => {
-    const { data, error: e } = await consulta('*').order('created_at', { ascending: true }).order('id', { ascending: true }).range(0, 9999);
-    if (e) return alert(e.message);
-    const campos = Object.entries(CAMPOS).filter(([, f]) => !esArchivo(f) && f.type !== 'firma' && f.type !== 'declaracion');
-    const head = ['Trámite', 'Fecha de carga', 'Estado', 'N.º de afiliado', ...campos.flatMap(([, f]) => (f.type === 'familiares' ? ['Familiares', 'Cantidad de familiares'] : [f.label])), 'Adjuntos', 'Firmó', 'Notas internas'];
-    const cel = (v) => {
-      v = String(v ?? '');
-      if (/^\d{10,}$/.test(v)) v = `="${v}"`;
-      else if (/^[=+\-@]/.test(v)) v = "'" + v;
-      return /[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-    };
-    const lineas = [head.map(cel).join(';')];
-    for (const r of data) {
-      const d = r.datos || {};
-      const fila = [r.nro_tramite, fechaHora(r.created_at), ESTADOS[r.estado], r.nro_afiliado];
-      for (const [k, f] of campos) {
-        if (f.type === 'familiares') {
-          const fs = d.tiene_familiares === 'si' ? d.familiares || [] : [];
-          fila.push(fs.map((x) => `${x.nombre} (${x.parentesco}, DNI ${x.dni})`).join(' | '), fs.length);
-        } else fila.push(f.type === 'money' && d[k] ? String(d[k]).replace('.', ',') : legible(f, d[k]));
-      }
-      fila.push((r.archivos || []).length, (r.archivos || []).some((a) => a.campo === 'firma') ? 'Sí' : 'No', r.notas);
-      lineas.push(fila.map(cel).join(';'));
-    }
-    const blob = new Blob(['﻿' + lineas.join('\r\n')], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `pecifa-afiliaciones-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-  };
-
-  const totalTodo = Object.values(conteo).reduce((a, b) => a + b, 0);
-
-  return (
-    <>
-      <div className="adm-head">
-        <h1>Solicitudes de afiliación</h1>
-        <button className="adm-btn" onClick={exportar}>
-          Exportar a Excel (CSV)
-        </button>
-      </div>
-      <div className="adm-cards">
-        <button className={`adm-card${estado === '' ? ' on' : ''}`} onClick={() => setEstado('')}>
-          <span>Total</span>
-          <b>{totalTodo}</b>
-        </button>
-        {Object.entries(ESTADOS).map(([k, t]) => (
-          <button key={k} className={`adm-card ${k}${estado === k ? ' on' : ''}`} onClick={() => setEstado(k)}>
-            <span>{t}</span>
-            <b>{conteo[k] ?? '–'}</b>
-          </button>
-        ))}
-      </div>
-      <div className="adm-filters">
-        <input type="search" placeholder="Buscar nombre, DNI, CUIL, trámite, fuerza…" value={q} onChange={(e) => setQ(e.target.value)} />
-        <select value={estado} onChange={(e) => setEstado(e.target.value)}>
-          <option value="">Todos los estados</option>
-          {Object.entries(ESTADOS).map(([k, t]) => (
-            <option key={k} value={k}>
-              {t}
-            </option>
-          ))}
-        </select>
-        <label>
-          Desde <input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
-        </label>
-        <label>
-          Hasta <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} />
-        </label>
-        <span className="tot">{cargando ? 'Cargando…' : `${total} resultado${total === 1 ? '' : 's'}`}</span>
-      </div>
-      {error && <div className="adm-msg err">{error}</div>}
-      <table className="adm-table">
-        <thead>
-          <tr>
-            <th>Trámite</th>
-            <th>Fecha</th>
-            <th>Apellido y nombre</th>
-            <th>DNI</th>
-            <th className="hide-m">Fuerza</th>
-            <th className="hide-m">Localidad</th>
-            <th className="hide-m">Docs</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {!cargando && !rows.length && (
-            <tr>
-              <td colSpan={8} className="adm-empty">
-                Todavía no hay solicitudes{q || estado ? ' con esos filtros' : ''}.
-              </td>
-            </tr>
-          )}
-          {rows.map((r) => (
-            <tr key={r.id} className="row" onClick={() => nav(`/admin/${r.id}`)}>
-              <td className="adm-nro">{r.nro_tramite}</td>
-              <td>{fechaHora(r.created_at)}</td>
-              <td>
-                <strong>
-                  {r.apellido}, {r.nombres}
-                </strong>
-              </td>
-              <td>{r.dni}</td>
-              <td className="hide-m">{r.fuerza}</td>
-              <td className="hide-m">{r.localidad}</td>
-              <td className="hide-m">{(r.archivos || []).length}</td>
-              <td>
-                <Badge e={r.estado} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {rows.length < total && (
-        <div className="adm-more">
-          <button className="adm-btn" onClick={() => setPag((p) => p + 1)}>
-            Ver más
-          </button>
-        </div>
-      )}
-    </>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 function Detalle({ usuario }) {
   const { id } = useParams();
+  const location = useLocation();
+  const returnTo = location.state?.returnTo?.startsWith('/admin?') ? location.state.returnTo : '/admin?vista=base';
   const [row, setRow] = useState(null);
   const [urls, setUrls] = useState({});
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState('');
-  const [form, setForm] = useState({ estado: '', nro_afiliado: '', notas: '', nota: '', notificar: false });
+  const [shareFile, setShareFile] = useState(null);
+  const [form, setForm] = useState({ estado: '', nro_afiliado: '', seccional: '', afiliado_por: '', notas: '', nota: '', notificar: false });
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase.from('afiliaciones').select('*').eq('id', id).maybeSingle();
@@ -341,7 +122,7 @@ function Detalle({ usuario }) {
       return;
     }
     setRow(data);
-    setForm({ estado: data.estado, nro_afiliado: data.nro_afiliado || '', notas: data.notas || '', nota: '', notificar: false });
+    setForm({ estado: data.estado, nro_afiliado: data.nro_afiliado || '', seccional: data.datos?.seccional || '', afiliado_por: data.datos?.afiliado_por || '', notas: data.notas || '', nota: '', notificar: false });
     const paths = (data.archivos || []).map((a) => a.path);
     if (paths.length) {
       const { data: s } = await supabase.storage.from(BUCKET).createSignedUrls(paths, 3600);
@@ -352,6 +133,9 @@ function Detalle({ usuario }) {
   }, [id]);
 
   useEffect(() => {
+    setRow(null);
+    setUrls({});
+    setShareFile(null);
     cargar();
   }, [cargar]);
 
@@ -366,14 +150,17 @@ function Detalle({ usuario }) {
     const cambios = [];
     if (form.estado !== row.estado) cambios.push(`Estado: ${ESTADOS[form.estado]}`);
     if (form.nro_afiliado !== (row.nro_afiliado || '')) cambios.push(`N.º de afiliado: ${form.nro_afiliado || '(vacío)'}`);
+    if (form.notas !== (row.notas || '')) cambios.push('Notas internas actualizadas.');
+    if (form.seccional.trim() !== (row.datos?.seccional || '')) cambios.push(`Seccional: ${form.seccional.trim() || '(sin asignar)'}`);
+    if (form.afiliado_por.trim() !== (row.datos?.afiliado_por || '')) cambios.push(`Referente: ${form.afiliado_por.trim() || '(sin asignar)'}`);
     const hist = [...(row.historial || [])];
     if (cambios.length || form.nota.trim()) {
       hist.push({ fecha: new Date().toISOString(), estado: form.estado, usuario, nota: [form.nota.trim(), ...cambios].filter(Boolean).join('\n') });
     }
-    const { error } = await supabase.from('afiliaciones').update({ estado: form.estado, nro_afiliado: form.nro_afiliado.trim().slice(0, 20), notas: form.notas, historial: hist }).eq('id', row.id);
-    if (error) {
+    const { data: saved, error } = await supabase.from('afiliaciones').update({ estado: form.estado, nro_afiliado: form.nro_afiliado.trim().slice(0, 20), datos: { ...row.datos, seccional: form.seccional.trim().slice(0, 80), afiliado_por: form.afiliado_por.trim().slice(0, 80) }, notas: form.notas, historial: hist }).eq('id', row.id).eq('updated_at', row.updated_at).select('id');
+    if (error || !saved?.length) {
       setBusy('');
-      return setMsg({ t: 'err', m: error.message });
+      return setMsg({ t: 'err', m: error?.message || 'Otra persona modificó esta ficha. Recargá la página y revisá los cambios antes de guardar.' });
     }
     let m = { t: 'ok', m: 'Cambios guardados.' };
     if (form.notificar) {
@@ -389,7 +176,13 @@ function Detalle({ usuario }) {
     setBusy(a);
     setMsg(null);
     try {
-      if (a === 'reenviar') {
+      if (a === 'preparar') {
+        const response = await api('expediente', { id: row.id });
+        if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || 'No se pudo generar el expediente.');
+        const file = new File([await response.blob()], `${row.nro_tramite}-expediente.pdf`, { type: 'application/pdf' });
+        setShareFile(file);
+        setMsg({ t: 'ok', m: 'Expediente preparado. Podés compartirlo o descargarlo con los botones de abajo.' });
+      } else if (a === 'reenviar') {
         const r = await api('reenviar', { id: row.id });
         const j = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(j.error || 'No se pudo enviar.');
@@ -399,6 +192,18 @@ function Detalle({ usuario }) {
       setMsg({ t: 'err', m: e.message });
     }
     setBusy('');
+  };
+
+  const copiarEnlace = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/admin/${row.id}`);
+      setMsg({ t: 'ok', m: 'Enlace de la ficha copiado. Se requiere una cuenta autorizada para abrirlo.' });
+    } catch { setMsg({ t: 'warn', m: 'No se pudo copiar. Copiá la dirección del navegador para compartir la ficha.' }); }
+  };
+
+  const compartirPDF = async () => {
+    try { await navigator.share({ files: [shareFile], title: `PECIFA · ${row.nro_tramite}` }); }
+    catch (error) { if (error.name !== 'AbortError') setMsg({ t: 'err', m: 'No se pudo compartir. Podés descargar el PDF y adjuntarlo manualmente.' }); }
   };
 
   if (row === null) return <p>Cargando…</p>;
@@ -413,7 +218,7 @@ function Detalle({ usuario }) {
   return (
     <>
       <p>
-        <Link to="/admin">← Volver al listado</Link>
+        <Link to={returnTo}>← Volver al listado</Link>
       </p>
       <div className="adm-head">
         <div>
@@ -425,6 +230,7 @@ function Detalle({ usuario }) {
           </p>
         </div>
         <div className="adm-acts">
+          <button className="adm-btn" onClick={copiarEnlace}><Copy size={15} /> Copiar enlace</button>
           <button className="adm-btn adm-btn--pri" disabled={!!busy} onClick={() => accion('expediente')}>
             {busy === 'expediente' ? 'Generando…' : 'Descargar expediente PDF'}
           </button>
@@ -434,9 +240,12 @@ function Detalle({ usuario }) {
           <button className="adm-btn" disabled={!!busy} onClick={() => accion('reenviar')}>
             {busy === 'reenviar' ? 'Enviando…' : 'Reenviar por correo'}
           </button>
+          <button className="adm-btn" disabled={!!busy} onClick={() => accion('preparar')}><Share2 size={15} />{busy === 'preparar' ? 'Preparando…' : 'Preparar PDF para compartir'}</button>
         </div>
       </div>
-      {msg && <div className={`adm-msg ${msg.t}`}>{msg.m}</div>}
+      {msg && <div className={`adm-msg ${msg.t}`} role="status">{msg.m}</div>}
+      {shareFile && <div className="adm-box np-share-fallback"><h2>Expediente listo</h2><div className="adm-acts">{navigator.canShare?.({ files: [shareFile] }) && <button className="adm-btn adm-btn--pri" onClick={compartirPDF}><Share2 size={15} /> Compartir PDF preparado</button>}<button className="adm-btn" onClick={() => saveBlob(shareFile, shareFile.name)}><Download size={15} /> Descargar PDF preparado</button><button className="adm-btn" onClick={() => setShareFile(null)}>Cerrar</button></div></div>}
+      <div className="np-detail-contact">{row.email && <a className="adm-btn" href={`mailto:${row.email}`}><Mail size={15} />{row.email}</a>}{row.telefono && <a className="adm-btn" href={`tel:${row.telefono.replace(/[^+0-9]/g, '')}`}><Phone size={15} />{row.telefono}</a>}<span className="adm-btn">Seccional: {d.seccional || 'Sin informar'}</span>{d.afiliado_por && <span className="adm-btn">Referente: {d.afiliado_por}</span>}</div>
 
       <div className="adm-cols">
         <div>
@@ -553,6 +362,10 @@ function Detalle({ usuario }) {
             </select>
             <label htmlFor="g-nro">N.º de afiliado</label>
             <input id="g-nro" type="text" maxLength={20} value={form.nro_afiliado} onChange={(e) => setForm({ ...form, nro_afiliado: e.target.value })} />
+            <label htmlFor="g-seccional">Seccional asignada</label>
+            <input id="g-seccional" type="text" maxLength={80} placeholder="Ej.: Córdoba" value={form.seccional} onChange={event => setForm({ ...form, seccional: event.target.value })} />
+            <label htmlFor="g-referente">Referente / persona que afilió</label>
+            <input id="g-referente" type="text" maxLength={80} value={form.afiliado_por} onChange={event => setForm({ ...form, afiliado_por: event.target.value })} />
             <label htmlFor="g-nota">
               Mensaje para el afiliado <span style={{ fontWeight: 400, color: '#66728c' }}>(queda en el historial)</span>
             </label>

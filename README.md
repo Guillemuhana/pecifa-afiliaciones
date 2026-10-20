@@ -116,6 +116,35 @@ O embebida en una página (widget HTML de Elementor). El `allow="camera"` es nec
 ```
 
 ## Desarrollo local
+
+### Panel nacional
+
+El acceso sigue siendo `/admin`, mediante Supabase Auth y la tabla `staff`.
+No necesita cambios de esquema: utiliza `datos.seccional` y `datos.afiliado_por`.
+
+- **Resumen nacional:** indicadores, ingresos de los últimos seis meses, estados,
+  seccionales y alertas nacionales de solicitudes sin resolver hace siete días o más.
+  Las aprobadas del gráfico corresponden al estado actual de cada cohorte de ingreso.
+- **Base de afiliaciones:** búsqueda sin distinción de acentos, filtros por estado,
+  seccional, fuerza, categoría y fechas de Argentina; ordenamiento, columnas configurables,
+  selección y paginación. Los filtros se conservan en la URL y entre vistas.
+- **Informes y seccionales:** distribución por seccional, fuerza y referente declarado.
+- **Exportaciones:** Excel real con cinco hojas y CSV de todos los resultados filtrados
+  o de las filas seleccionadas. La carga y exportación recorren todas las páginas de
+  Supabase. Los CBU y CUIL se guardan como texto en Excel; el CSV neutraliza fórmulas.
+  No se exportan tokens ni rutas privadas de documentos.
+- **Informe PDF:** abre la impresión del navegador para guardar un resumen agregado
+  de todos los resultados filtrados, independientemente de las filas seleccionadas.
+- **Compartir:** copiar una vista o ficha requiere que el destinatario tenga acceso al
+  panel. La ficha también permite preparar un expediente PDF y compartir el archivo
+  mediante el dispositivo cuando admite esa función, o descargarlo para adjuntarlo.
+- **Gestión de ficha:** asignación de seccional y referente, estado, número de afiliado,
+  notas e historial; detecta modificaciones simultáneas antes de sobrescribir una ficha.
+
+`npm test` verifica cálculos, filtros, exportación y envío. `npm run test:browser`
+prueba el panel con datos ficticios y Supabase simulado, sin tocar producción.
+En Windows usa Edge instalado; en otros sistemas requiere Chromium de Playwright.
+
 ```bash
 npm install
 cp .env.example .env.local   # completar
